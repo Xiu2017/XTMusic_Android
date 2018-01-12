@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        android:fitsSystemWindows="true"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/keyword"
+            android:imeOptions="actionSearch"
+            android:hint="搜索歌曲/歌手"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:background="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+        <Button
+            android:id="@+id/searchBtn"
+            android:text="搜索"
+            android:onClick="onClick"
+            android:layout_weight="5"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+<!--        <EditText
+            android:textColor="@android:color/white"
+            android:textSize="15dp"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />-->
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/searchList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null" />
+
+</LinearLayout>

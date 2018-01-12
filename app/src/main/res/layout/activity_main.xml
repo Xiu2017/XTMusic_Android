@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:elevation="2dp"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal">
+
+            <!--            <TextView
+                            android:id="@+id/timer"
+                            android:layout_width="50dp"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentLeft="true"
+                            android:gravity="center"
+                            android:text="00:00"
+                            android:textColor="@color/colorWrite"
+                            android:textSize="14dp"
+                            android:visibility="gone" />-->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="炫听音乐"
+                android:textColor="@android:color/white"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:id="@+id/mainMenu"
+                android:layout_width="42dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:onClick="onClick"
+                android:padding="5dp"
+                android:src="@mipmap/menu" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/search"
+            android:onClick="onClick"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginHorizontal="6dp"
+            android:background="#20000000"
+            android:gravity="center"
+            android:text="搜索"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/emptyList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:padding="10dp"
+        android:visibility="invisible">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:letterSpacing="0.05"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/a4"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/group"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_below="@+id/topBar"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/group_song"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:onClick="switchItem"
+                android:text="@string/group_1"
+                android:textColor="@color/colorPrimary"
+                android:textSize="15sp" />
+            <!--            <TextView
+                            android:id="@+id/group_folder"
+                            android:onClick="switchItem"
+                            android:gravity="center"
+                            android:text="@string/group_2"
+                            android:textSize="15sp"
+                            android:textColor="@color/colorText"
+                            android:layout_weight="1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+                        <TextView
+                            android:id="@+id/group_cloud"
+                            android:onClick="switchItem"
+                            android:gravity="center"
+                            android:text="@string/group_3"
+                            android:textSize="15sp"
+                            android:textColor="@color/colorText"
+                            android:layout_weight="1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />-->
+            <TextView
+                android:id="@+id/group_history"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:onClick="switchItem"
+                android:text="@string/group_4"
+                android:textColor="@color/colorText"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+    <!--    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_below="@+id/group"
+            android:background="@color/colorLine" />-->
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/btmBar"
+            android:layout_below="@+id/group">
+
+        </android.support.v4.view.ViewPager>
+
+    <ImageView
+        android:id="@+id/hunt"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_above="@id/btmBar"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="60dp"
+        android:background="@drawable/circle_hunt"
+        android:onClick="onClick"
+        android:padding="5dp"
+        android:src="@mipmap/hunt"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/currentTime"
+        style="@style/StyleProgressBarMini"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_above="@+id/btmBar"
+        android:max="1000" />
+
+    <LinearLayout
+        android:id="@+id/btmBar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        android:onClick="openAlbum"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <ImageView
+            android:id="@+id/album"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="5dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="25dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="炫听音乐"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="25dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="炫酷生活"
+                    android:textColor="#797A7B"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/playBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_vertical"
+                android:background="?android:attr/selectableItemBackground"
+                android:onClick="playControl"
+                android:paddingHorizontal="5dp"
+                android:src="@mipmap/play_red" />
+
+            <ImageView
+                android:id="@+id/playNext"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_vertical"
+                android:background="?android:attr/selectableItemBackground"
+                android:onClick="playControl"
+                android:paddingHorizontal="10dp"
+                android:src="@mipmap/next_red" />
+
+            <!--            <ImageView
+                            android:id="@+id/playList"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="?android:attr/selectableItemBackground"
+                            android:onClick="onClick"
+                            android:paddingHorizontal="8dp"
+                            android:src="@mipmap/playlist" />-->
+
+
+            <!--            <ImageView
+                            android:id="@+id/nextBtn"
+                            android:onClick="playControl"
+                            android:layout_width="40dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center_vertical"
+                            android:paddingHorizontal="5dp"
+                            android:layout_marginRight="5dp"
+                            android:background="?android:attr/selectableItemBackground"
+                            android:src="@mipmap/next_red" />-->
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

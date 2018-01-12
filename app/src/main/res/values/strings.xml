@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">炫听音乐</string>
+
+    <string name="no_permissions">应用需要必要的运行权限</string>
+    <string name="settings">设置</string>
+    <string name="help">提示</string>
+    <string name="string_help_text">当前应用缺少必要权限。\n请点击\"设置\"-\"权限\"-打开所需权限。</string>
+    <string name="quit">退出</string>
+
+    <string name="a0">更新列表</string>
+    <string name="a1">定时退出</string>
+    <string name="a2">关于</string>
+    <string name="a3">退出</string>
+
+    <string name="list_title">刚好遇见你</string>
+    <string name="a4">未在本机扫描到歌曲</string>
+
+    <string name="group_1">本地歌曲</string>
+    <string name="group_2">文件夹</string>
+    <string name="group_3">云音乐</string>
+    <string name="group_4">最近播放</string>
+    <string name="title_activity_login">登录</string>
+    <string name="acc">账号</string>
+    <string name="pwd">密码</string>
+    <string name="a5">计时结束后播放完当前歌曲再停止</string>
+    <string name="a6">还没有播放记录哦</string>
+
+    <string name="about">黄修情\nS3SJ130 Android兴趣班\n指导老师 涂乾文\n2018/1/12</string>
+</resources>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+    <TextView
+        android:id="@+id/_id"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="0dp" />
+    <LinearLayout
+        android:layout_centerVertical="true"
+        android:layout_marginRight="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="46dp">
+        <ImageView
+            android:id="@+id/playing"
+            android:src="@mipmap/sound"
+            android:layout_marginLeft="12dp"
+            android:layout_gravity="center_vertical"
+            android:layout_width="15dp"
+            android:layout_height="15dp" />
+        <TextView
+            android:id="@+id/title"
+            android:gravity="center_vertical"
+            android:text="除了呼吸就是想你"
+            android:textSize="15sp"
+            android:textColor="@android:color/black"
+            android:layout_marginLeft="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+        <TextView
+            android:id="@+id/artist"
+            android:gravity="center_vertical"
+            android:text=" - 杨青[DJ王志Mix]"
+            android:textSize="12sp"
+            android:textColor="@color/colorText"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/del"
+        android:src="@mipmap/delete"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_width="40dp"
+        android:layout_height="20dp" />
+
+</RelativeLayout>
