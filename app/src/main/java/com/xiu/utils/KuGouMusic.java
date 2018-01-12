@@ -39,7 +39,7 @@ public class KuGouMusic{
         final MusicList musicList = new MusicList();
         final List<Music> list = new ArrayList<>();
         String searchUrl = "http://mobilecdn.kugou.com/api/v3/search/song?format=jsonp&keyword=" + keywork +
-                "&page=1&pagesize=10&showtype=1";//&callback=kgJSONP238513750";
+                "&page=1&pagesize=30&showtype=1";//&callback=kgJSONP238513750";
 
         //构建一个请求对象
         Request request = new Request.Builder().url(searchUrl).build();

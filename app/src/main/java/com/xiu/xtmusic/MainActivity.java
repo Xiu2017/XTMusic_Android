@@ -101,8 +101,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private BaseAdapter adapter, playListAdapter;
     private ListView musicList, playList;
     private LinearLayout group, emptyList;
-    private ViewPager viewPager;
-    private List<View> pages;
+    //private ViewPager viewPager;
+    //private List<View> pages;
 
     //==========权限相关==========//
     private static final int REQUEST_CODE = 0;  //请求码
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         dao = new MusicDao(this);
 
         initStatusBar();  //初始化沉浸式状态栏
-        initViewPager();  //初始化viewPager
+        //initViewPager();  //初始化viewPager
         initView();  //初始化布局元素
         initList();  //初始化列表
         initRegister();  //注册内容观察者,当媒体数据库发生变化时,更新音乐列表
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //初始化布局元素
     public void initView() {
-        group = findViewById(R.id.group);
+        //group = findViewById(R.id.group);
         playBtn = findViewById(R.id.playBtn);
         title = findViewById(R.id.title);
         artist = findViewById(R.id.artist);
@@ -190,8 +190,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         mainMenu = findViewById(R.id.mainMenu);
         currentTime = findViewById(R.id.currentTime);
         //timer = findViewById(R.id.timer);
-        musicList = viewSong.findViewById(R.id.musicList);
-        emptyList = viewSong.findViewById(R.id.emptyList);
+        musicList = findViewById(R.id.musicList);
+        emptyList = findViewById(R.id.emptyList);
         hunt = findViewById(R.id.hunt);
         user = findViewById(R.id.user);
         app = (mApplication) getApplicationContext();
@@ -199,14 +199,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     }
 
     //初始化viewPager
-    public void initViewPager() {
+/*    public void initViewPager() {
         viewPager = findViewById(R.id.viewPager);
         //查找布局文件
         LayoutInflater inflater = getLayoutInflater();
         viewSong = inflater.inflate(R.layout.layout_list_song, null);
         //viewFolder = inflater.inflate(R.layout.layout_list_folder, null);
         //viewCloud = inflater.inflate(R.layout.layout_list_cloud, null);
-        viewHistory = inflater.inflate(R.layout.layout_list_history, null);
+        //viewHistory = inflater.inflate(R.layout.layout_list_history, null);
 
         //将view装入数组中
         pages = new ArrayList<View>();
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         viewPager.setAdapter(new MainPagerAdapter(pages));
         //添加监听器
         viewPager.addOnPageChangeListener(mChangeListener);
-    }
+    }*/
 
     //构建PopupMenu菜单
     public void createMenu() {
@@ -834,24 +834,24 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     };
 
     //viewpager切换到指定item
-    public void switchItem(View view) {
+/*    public void switchItem(View view) {
         int item = 0;
         switch (view.getId()) {
             case R.id.group_song:
                 item = 0;
                 break;
-/*            case R.id.group_folder:
+*//*            case R.id.group_folder:
                 item = 1;
                 break;
             case R.id.group_cloud:
                 item = 2;
-                break;*/
+                break;*//*
             case R.id.group_history:
                 item = 1;
                 break;
         }
         viewPager.setCurrentItem(item, true);
-    }
+    }*/
 
     //更新时间进度
     public void currentTime(int current) {

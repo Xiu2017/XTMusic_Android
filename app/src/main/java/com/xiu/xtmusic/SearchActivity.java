@@ -20,10 +20,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.xiu.adapter.MusicListAdapter;
@@ -38,8 +40,10 @@ import com.xiu.utils.mApplication;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class SearchActivity extends AppCompatActivity implements View.OnClickListener, TextView.OnEditorActionListener {
+public class SearchActivity extends AppCompatActivity implements View.OnClickListener,
+        TextView.OnEditorActionListener {
 
+    private ProgressBar loadlist;
     private mApplication app;
     private MusicDao dao;
     private List<Music> list;
@@ -53,16 +57,34 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_search);
         app = (mApplication) getApplicationContext();
         dao = new MusicDao(this);
-        seaList = findViewById(R.id.searchList);
-        keywork = findViewById(R.id.keyword);
-        keywork.setOnEditorActionListener(this);
         initStatusBar();
         initView();
+
+
+        seaList.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+                switch (i) {
+                    case SCROLL_STATE_IDLE:
+                        if (isListViewReachBottomEdge(absListView)) {
+
+                        }
+                        break;
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+            }
+        });
     }
 
     //初始化布局元素
     private void initView() {
+        seaList = findViewById(R.id.searchList);
         keywork = findViewById(R.id.keyword);
+        loadlist = findViewById(R.id.loadlist);
+        keywork.setOnEditorActionListener(this);
     }
 
     //初始化沉浸式状态栏
@@ -110,9 +132,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.searchBtn:
+/*            case R.id.searchBtn:
                 searchMusic(view);
-                break;
+                break;*/
             case R.id.list_item:
                 clickItem(view);
                 break;
@@ -120,7 +142,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     //搜索歌曲
-    public void searchMusic(View view){
+    public void searchMusic(View view) {
         String str = keywork.getText().toString();
         if (str.length() == 0) {
             return;
@@ -132,7 +154,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     //处理并播放歌曲
-    public void clickItem(View view){
+    public void clickItem(View view) {
         new KuGouMusic(this).musicUrl(getMusicByNum(view));
     }
 
@@ -142,7 +164,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         LinearLayout layout = (LinearLayout) view;
         TextView textView = layout.findViewById(R.id.musicNum);
         int musicNum = Integer.parseInt(textView.getText().toString());
-        return list.get(musicNum-1);
+        return list.get(musicNum - 1);
     }
 
     @Override
@@ -169,5 +191,15 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             return true;
         }
         return false;
+    }
+
+    public boolean isListViewReachBottomEdge(final AbsListView listView) {
+        boolean result = false;
+        if (listView.getLastVisiblePosition() == (listView.getCount() - 1)) {
+            final View bottomChildView = listView.getChildAt(listView.getLastVisiblePosition() - listView.getFirstVisiblePosition());
+            result = (listView.getHeight() >= bottomChildView.getBottom());
+        }
+        ;
+        return result;
     }
 }

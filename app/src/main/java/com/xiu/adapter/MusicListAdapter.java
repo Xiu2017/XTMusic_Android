@@ -72,6 +72,7 @@ public class MusicListAdapter extends BaseAdapter{
                 musicItem.playing = view.findViewById(R.id.playing);
                 musicItem.musicTitle = view.findViewById(R.id.musicTitle);
                 musicItem.musicArtist = view.findViewById(R.id.musicArtist);
+                musicItem.kugou = view.findViewById(R.id.kugou);
                 //musicItem.musicTime = view.findViewById(R.id.musicTime);
                 view.setTag(musicItem);
             } else {
@@ -114,6 +115,12 @@ public class MusicListAdapter extends BaseAdapter{
                 musicItem.playing.setVisibility(View.GONE);
             }
 
+            if(music.getPath().contains("http://")){
+                musicItem.kugou.setVisibility(View.VISIBLE);
+            }else {
+                musicItem.kugou.setVisibility(View.GONE);
+            }
+
             return view;
         }
         return null;
@@ -121,7 +128,7 @@ public class MusicListAdapter extends BaseAdapter{
 
     final class MusicItem {
         LinearLayout list_item;
-        ImageView playing;
+        ImageView playing, kugou;
         TextView _id, musicNum, musicTitle, musicArtist; //musicTime;
     }
 }
