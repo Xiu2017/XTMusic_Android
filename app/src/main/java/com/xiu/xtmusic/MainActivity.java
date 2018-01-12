@@ -66,6 +66,7 @@ import com.xiu.utils.AudioUtil;
 import com.xiu.utils.CheckPermission;
 import com.xiu.utils.FileUtils;
 import com.xiu.utils.ImageUtil;
+import com.xiu.utils.NetworkState;
 import com.xiu.utils.ServerURL;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.TimeFormatUtil;
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     //配置需要取的权限
     static final String[] PERMISSION = new String[]{
             //Manifest.permission.WRITE_SETTINGS,  //修改系统设置权限
+            Manifest.permission.SYSTEM_ALERT_WINDOW,  //弹出系统dialog
             Manifest.permission.WRITE_EXTERNAL_STORAGE,  // 写入权限
             Manifest.permission.READ_PHONE_STATE,  //电话状态读取权限
             Manifest.permission.INTERNET  //网络访问权限
@@ -435,16 +437,62 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 dialog.show();
                 //Toast.makeText(this, "查看歌曲信息", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.menu_delete:
+            case R.id.menu_delete:  //删除歌曲
                 dialog.dismiss();
                 delMusic(getMusicByNum(view));
                 break;
-            case R.id.search:
-                Intent intent = new Intent(this, SearchActivity.class);
+            case R.id.search:  //搜索在线歌曲
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
                 startActivity(intent);
                 break;
         }
     }
+
+    //网络状态检测
+/*    public void testNetwork(final int musicNum){
+        Log.d("net", NetworkState.GetNetype(this)+"");
+        switch (NetworkState.GetNetype(this)){
+            //返回值 -1：没有网络  1：WIFI网络2：wap网络3：net网络
+            case -1:
+                Toast.makeText(this, "当前没有网络连接", Toast.LENGTH_SHORT).show();
+                break;
+            case 1:
+                if(!NetworkState.isNetworkConnected(this)){
+                    Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
+                }else {
+                    sendPlay(musicNum);
+                }
+                break;
+            case 2:
+            case 3:
+                if(!NetworkState.isMobileConnected(this)){
+                    Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
+                    break;
+                }else if(!app.isMobileConnected()) {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("使用移动网络播放将会消耗大量流量，是否继续？");
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            app.setMobileConnected(true);
+                            dialogInterface.dismiss();
+                            sendPlay(musicNum);
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }else if(app.isMobileConnected()){
+                    sendPlay(musicNum);
+                }
+                break;
+        }
+    }*/
 
     //设置手机铃声
     public void setRing(View view){
@@ -464,7 +512,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     //删除歌曲
     public void delMusic(final Music music) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("确定要将歌曲从本地删除吗？");
+        if(music.getPath().contains("http://")){
+            builder.setMessage("确定要移除歌曲吗？");
+        }else {
+            builder.setMessage("确定要将歌曲从本地删除吗？");
+        }
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -483,31 +535,27 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         if(music.getPath().contains(extSD+"")) {
                             Toast.makeText(MainActivity.this, "暂不支持删除外置SD卡文件", Toast.LENGTH_SHORT).show();
                         }else {
-                            file.delete();
+                            //file.delete();
                         }
                     }
                 }
                 //if (file == null || ) {
                 int idx = app.getIdx()-1;
                 int delIdx = list.indexOf(music);
+                list.clear();
+                app.getmList().remove(music);
+                list.addAll(app.getmList());
                 if(delIdx == idx){
-                    list.remove(music);
-                    Log.i("str1", list.size()+"");
-                    app.setmList(list);
                     app.setIdx(delIdx);
                     playNext();
                 }else if(delIdx < idx){
-                    list.remove(music);
-                    Log.i("str2", list.size()+"");
-                    app.setmList(list);
                     app.setIdx(idx);
-                }else {
-                    list.remove(music);
-                    Log.i("str3", list.size()+"");
-                    app.setmList(list);
                 }
+                //从数据库和媒体库中删除
                 dao.delMusicById(music);
-                Log.i("str", music.get_id()+"");
+                getContentResolver().delete(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        MediaStore.Audio.Media.DATA + "= \"" + music.getPath() +"\"",
+                        null);
                 adapter.notifyDataSetChanged();
                 Toast.makeText(MainActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
 /*                 } else if(music.getPath().contains(extSD)) {
@@ -620,6 +668,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         //获取要播放歌曲的编号
         TextView textView = view.findViewById(R.id.musicNum);
         int musicNum = Integer.parseInt(textView.getText().toString());
+        //Music music = app.getmList().get(musicNum - 1);
+        sendPlay(musicNum);
+/*        if(music.getPath().contains("http://")){
+            testNetwork(musicNum);
+        }else {
+        }*/
+    }
+
+    //通知服务播放音乐
+    public void sendPlay(int musicNum){
         //如果点击的是正在播放的歌曲，直接去到专辑界面
         if (musicNum == app.getIdx()) {
             openAlbum(null);
@@ -636,7 +694,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //改变样式
     public void refresh() {
-        if (app.getmList() == null || app.getIdx() == 0) return;
+        if (app.getmList() == null || app.getIdx() < 1) return;
         Music music = app.getmList().get(app.getIdx() - 1);
         playBtn.setImageResource(R.mipmap.pause_red);
         title.setText(music.getTitle());

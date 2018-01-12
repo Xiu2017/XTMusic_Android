@@ -172,13 +172,20 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.share:  //分享音乐文件
                 if(app.getmList() != null && app.getIdx() != 0){
-                    Intent intent=new Intent(Intent.ACTION_SEND);
-                    intent.setType("audio/*");
-                    File file = new File(app.getmList().get(app.getIdx()-1).getPath());
-                    Uri uri = Uri.fromFile(file);
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(Intent.createChooser(intent, "分享音乐"));
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    if(music.getPath().contains("http://")){
+                        intent.setType("text/plain");
+                        intent.putExtra(Intent.EXTRA_TEXT, music.getPath());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(Intent.createChooser(intent, "分享音乐链接"));
+                    }else {
+                        intent.setType("audio/*");
+                        File file = new File(music.getPath());
+                        Uri uri = Uri.fromFile(file);
+                        intent.putExtra(Intent.EXTRA_STREAM, uri);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(Intent.createChooser(intent, "分享音乐文件"));
+                    }
                 }
                 break;
         }

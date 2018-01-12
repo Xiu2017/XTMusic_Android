@@ -9,20 +9,26 @@ import android.bluetooth.BluetoothHeadset;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -30,6 +36,7 @@ import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.utils.ImageUtil;
+import com.xiu.utils.NetworkState;
 import com.xiu.utils.mApplication;
 import com.xiu.xtmusic.AlbumActivity;
 import com.xiu.xtmusic.MainActivity;
@@ -166,6 +173,8 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             play();
             //Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();
             return;
+        }else if(music.getPath().contains("http://") && !testNetwork()){
+            return;
         }
         if (mp == null)
             mp = new MediaPlayer();
@@ -205,6 +214,58 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             e.printStackTrace();
             Toast.makeText(this, "无法播放该歌曲", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+
+    //网络状态检测
+    public boolean testNetwork(){
+        Log.d("net", NetworkState.GetNetype(this)+"");
+        switch (NetworkState.GetNetype(this)){
+            //返回值 -1：没有网络  1：WIFI网络2：wap网络3：net网络
+            case -1:
+                Toast.makeText(this, "当前没有网络连接", Toast.LENGTH_SHORT).show();
+                return false;
+            case 1:
+                if(!NetworkState.isNetworkConnected(this)){
+                    Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
+                    return false;
+                }else {
+                    return true;
+                }
+            case 2:
+            case 3:
+                if(!NetworkState.isMobileConnected(this)){
+                    Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
+                    return false;
+                }else if(!app.isMobileConnected()) {
+                    app.setMobileConnected(true);
+                    Toast.makeText(this, "当前正在使用移动网络播放，请注意您的流量哦！", Toast.LENGTH_LONG).show();
+                    return true;
+/*                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("使用移动网络播放将会消耗大量流量，是否继续？");
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            app.setMobileConnected(true);
+                            dialogInterface.dismiss();
+                            play();
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                    dialog.show();*/
+                }else if(app.isMobileConnected()){
+                    return true;
+                }
+        }
+        return false;
     }
 
     //将音乐添加到最近播放列表

@@ -59,8 +59,8 @@
             android:layout_marginHorizontal="6dp"
             android:background="#20000000"
             android:gravity="center"
-            android:text="搜索"
-            android:textColor="@android:color/white"
+            android:text="搜索在线歌曲"
+            android:textColor="#99FFFFFF"
             android:textSize="15sp" />
     </LinearLayout>
 

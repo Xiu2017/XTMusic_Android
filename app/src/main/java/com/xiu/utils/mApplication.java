@@ -36,6 +36,7 @@ public class mApplication extends Application {
     private int idx;  //正在播放歌曲编号
     private MusicService mService;  //音乐服务
     private MediaPlayer mp;
+    private boolean mobileConnected;  //是否使用移动网络播放
 
     /**
      * 获取音乐列表
@@ -113,7 +114,10 @@ public class mApplication extends Application {
             }
             cursor.close();
         }
-        List list = dao.selMusicByDate();
+        List<Music> list = dao.selMusicByDate();
+        if(list == null){
+            list = new ArrayList<>();
+        }
         list.addAll(mList);
         Log.i("size", list.size()+"");
         mList = list;
@@ -230,5 +234,13 @@ public class mApplication extends Application {
         onDestroy();
 
         System.exit(0);
+    }
+
+    public boolean isMobileConnected() {
+        return mobileConnected;
+    }
+
+    public void setMobileConnected(boolean mobileConnected) {
+        this.mobileConnected = mobileConnected;
     }
 }
