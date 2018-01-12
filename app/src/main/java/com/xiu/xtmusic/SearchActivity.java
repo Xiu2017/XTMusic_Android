@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.xiu.adapter.MusicListAdapter;
 import com.xiu.adapter.SearchListAdapter;
@@ -38,11 +39,13 @@ import com.xiu.utils.KuGouMusic;
 import com.xiu.utils.mApplication;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener,
         TextView.OnEditorActionListener {
 
+    private int page;
     private ProgressBar loadlist;
     private mApplication app;
     private MusicDao dao;
@@ -56,18 +59,25 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         app = (mApplication) getApplicationContext();
+        app.addActivity(this);
         dao = new MusicDao(this);
         initStatusBar();
         initView();
 
+        page = 1;
+        list = new ArrayList<>();
+        adapter = new SearchListAdapter(list, SearchActivity.this);
+        seaList.setAdapter(adapter);
 
         seaList.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
                 switch (i) {
                     case SCROLL_STATE_IDLE:
-                        if (isListViewReachBottomEdge(absListView)) {
-
+                        if (isListViewReachBottomEdge(absListView) && list.size() > 0) {
+                            loadlist.setVisibility(View.VISIBLE);
+                            page++;
+                            searchMusic(absListView);
                         }
                         break;
                 }
@@ -111,13 +121,18 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             switch (intent.getIntExtra("what", 0)) {
                 case Msg.SEARCH_RESULT:
                     MusicList musicList = intent.getParcelableExtra("list");
-                    list = musicList.getList();
-                    adapter = new SearchListAdapter(list, SearchActivity.this);
-                    seaList.setAdapter(adapter);
+                    List<Music> mList = musicList.getList();
+                    if(mList == null || mList.size() == 0){
+                        Toast.makeText(SearchActivity.this, "已经是最后一页啦", Toast.LENGTH_SHORT).show();
+                        loadlist.setVisibility(View.GONE);
+                        return;
+                    }
+                    list.addAll(mList);
+                    adapter.notifyDataSetChanged();
+                    loadlist.setVisibility(View.GONE);
                     break;
                 case Msg.GET_MUSIC_PATH:
                     Music music = intent.getParcelableExtra("music");
-                    Log.i("msg", music.getPath());
                     dao.addToHistory(music);
                     app.getMusicData(SearchActivity.this);
                     Intent broadcast = new Intent();
@@ -143,11 +158,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
 
     //搜索歌曲
     public void searchMusic(View view) {
+        loadlist.setVisibility(View.VISIBLE);
         String str = keywork.getText().toString();
         if (str.length() == 0) {
             return;
         }
-        new KuGouMusic(this).search(str);
+        new KuGouMusic(this).search(str, page);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         //imm.hideSoftInputFromWindow(view, InputMethodManager.HIDE_NOT_ALWAYS);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -187,6 +203,8 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
         if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+            page = 0;
+            list.clear();
             searchMusic(textView);
             return true;
         }

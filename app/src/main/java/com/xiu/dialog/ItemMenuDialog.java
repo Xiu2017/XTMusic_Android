@@ -44,7 +44,11 @@ public class ItemMenuDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dialog_item_menu);
+        if(music.getPath().contains("http://")){
+            setContentView(R.layout.dialog_item_menu_kugou);
+        }else {
+            setContentView(R.layout.dialog_item_menu);
+        }
     }
 
     @Override

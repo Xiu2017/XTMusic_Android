@@ -1,9 +1,11 @@
 package com.xiu.dao;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 import com.xiu.entity.Music;
 
 import java.sql.SQLException;
@@ -121,6 +123,22 @@ public class MusicDao {
             e.printStackTrace();
         }
         return null;
+    }
+
+    //根据文件名和时长删除歌曲
+    public void delMusicByNameAndTime(String name, long size){
+        QueryBuilder builder = dao.queryBuilder();
+        try {
+            String str = name.replace("'", "''").replace("\"","\"\"");
+            builder.where().eq("name", ""+str+"").and().eq("size", size);
+            List list = builder.query();
+            //if(list != null){
+                //Log.d("size", list.size()+"");
+                dao.delete(list);
+            //}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //删除歌曲

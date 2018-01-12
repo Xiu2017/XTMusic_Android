@@ -85,14 +85,14 @@ public class mApplication extends Application {
                     String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                     if (isRepeat(title, artist, album)) continue;    //去掉重复歌曲
 
-                    String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+                    final String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
                     //if(!(name.endsWith(".mp3") || name.endsWith(".flac"))) continue;  //跳过不支持的格式
 
                     int time = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                     int id = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
                     //Long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                    long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
+                    final long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
 
                     music = new Music();
                     music.setTitle(title);
@@ -103,6 +103,14 @@ public class mApplication extends Application {
                     music.setName(name);
                     music.set_id(id);
                     music.setSize(size);
+
+                    //从数据库删除相同歌曲
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dao.delMusicByNameAndTime(name, size);
+                        }
+                    }).start();
 
                     //匹配父目录
                     String parentPath = path.replace("/" + name, "");
@@ -119,7 +127,7 @@ public class mApplication extends Application {
             list = new ArrayList<>();
         }
         list.addAll(mList);
-        Log.i("size", list.size()+"");
+        //Log.i("size", list.size()+"");
         mList = list;
         return  mList;
     }

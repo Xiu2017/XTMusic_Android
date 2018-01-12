@@ -173,9 +173,10 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
             case R.id.share:  //分享音乐文件
                 if(app.getmList() != null && app.getIdx() != 0){
                     Intent intent = new Intent(Intent.ACTION_SEND);
+                    String msg = "分享音乐："+music.getArtist()+" - "+music.getTitle()+"\n"+music.getPath();
                     if(music.getPath().contains("http://")){
                         intent.setType("text/plain");
-                        intent.putExtra(Intent.EXTRA_TEXT, music.getPath());
+                        intent.putExtra(Intent.EXTRA_TEXT, msg);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(Intent.createChooser(intent, "分享音乐链接"));
                     }else {
@@ -214,11 +215,11 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
 
     //更新缓冲进度
     public void bufferingUpdate(int percent){
-        if(percent < 20){
+/*        if(percent < 20){
             loading.setVisibility(View.VISIBLE);
         }else {
             loading.setVisibility(View.GONE);
-        }
+        }*/
         currentTime.setSecondaryProgress(music.getTime()/100*percent);
     }
 

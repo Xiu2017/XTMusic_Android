@@ -15,7 +15,7 @@
         <EditText
             android:id="@+id/keyword"
             android:imeOptions="actionSearch"
-            android:hint="搜索 歌曲/歌手/专辑"
+            android:hint="歌曲/歌手/专辑"
             android:textSize="15dp"
             android:gravity="center"
             android:paddingHorizontal="12dp"
@@ -46,7 +46,7 @@
 
     <ProgressBar
         android:id="@+id/loadlist"
-        android:layout_alignParentBottom="true"
+        android:layout_centerVertical="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone" />

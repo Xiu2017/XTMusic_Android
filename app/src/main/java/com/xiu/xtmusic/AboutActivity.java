@@ -8,12 +8,16 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.xiu.utils.mApplication;
+
 public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+        mApplication app = (mApplication) getApplicationContext();
+        app.addActivity(this);
         initStatusBar();
     }
 

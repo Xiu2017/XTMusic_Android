@@ -35,11 +35,11 @@ public class KuGouMusic{
 
     //查询列表
     //http://mobilecdn.kugou.com/api/v3/search/song?format=jsonp&keyword=搜索内容&page=1&pagesize=10&showtype=1&callback=kgJSONP238513750
-    public void search(String keywork) {
+    public void search(String keywork, int page) {
         final MusicList musicList = new MusicList();
         final List<Music> list = new ArrayList<>();
         String searchUrl = "http://mobilecdn.kugou.com/api/v3/search/song?format=jsonp&keyword=" + keywork +
-                "&page=1&pagesize=30&showtype=1";//&callback=kgJSONP238513750";
+                "&page="+page+"&pagesize=30&showtype=1";//&callback=kgJSONP238513750";
 
         //构建一个请求对象
         Request request = new Request.Builder().url(searchUrl).build();
@@ -107,10 +107,10 @@ public class KuGouMusic{
             public void onResponse(Call call, Response response) throws IOException {
                 //通过response得到服务器响应内容
                 String str = response.body().string();
-                Log.d("str", str);
+                //Log.d("str", str);
                 try {
                     JSONObject json = new JSONObject(str);
-                    Log.i("json", json.toString());
+                    //Log.i("json", json.toString());
                     music.setPath(json.getString("url"));
                     music.setTime(json.getInt("timeLength")*1000);
                     music.setName(music.getArtist()+" - "+music.getTitle()+".mp3");

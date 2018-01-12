@@ -218,7 +218,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 
     //网络状态检测
     public boolean testNetwork(){
-        Log.d("net", NetworkState.GetNetype(this)+"");
+        //Log.d("net", NetworkState.GetNetype(this)+"");
         switch (NetworkState.GetNetype(this)){
             //返回值 -1：没有网络  1：WIFI网络2：wap网络3：net网络
             case -1:
