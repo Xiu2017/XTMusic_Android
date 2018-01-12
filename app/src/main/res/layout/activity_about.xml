@@ -4,26 +4,29 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:orientation="vertical">
+
         <ImageView
-            android:src="@mipmap/xiu"
-            android:scaleType="fitXY"
-            android:layout_marginBottom="12dp"
-            android:layout_gravity="center"
             android:layout_width="100dp"
-            android:layout_height="100dp" />
-        <TextView
-            android:text="@string/about"
-            android:textSize="15dp"
-            android:textColor="@android:color/black"
+            android:layout_height="100dp"
             android:layout_gravity="center"
+            android:layout_marginBottom="12dp"
+            android:scaleType="fitXY"
+            android:src="@mipmap/xiu" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:autoLink="all"
             android:gravity="center"
             android:lineSpacingExtra="12dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:text="@string/about"
+            android:textColor="@android:color/black"
+            android:textSize="15sp" />
     </LinearLayout>
 
 </LinearLayout>
