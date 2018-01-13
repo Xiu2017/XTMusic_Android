@@ -3,6 +3,7 @@ package com.xiu.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
@@ -122,6 +123,7 @@ public class KuGouMusic{
                     kBroadcast.putExtra("music", music);
                     context.sendBroadcast(kBroadcast);
                 } catch (JSONException e) {
+                    Toast.makeText(context, "拉取歌曲链接失败", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             }

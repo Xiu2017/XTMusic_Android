@@ -130,12 +130,8 @@ public class MusicDao {
         QueryBuilder builder = dao.queryBuilder();
         try {
             String str = name.replace("'", "''").replace("\"","\"\"");
-            builder.where().eq("name", ""+str+"").and().eq("size", size);
-            List list = builder.query();
-            //if(list != null){
-                //Log.d("size", list.size()+"");
-                dao.delete(list);
-            //}
+            builder.where().eq("name", str).and().eq("size", size);
+            dao.delete(builder.query());
         } catch (SQLException e) {
             e.printStackTrace();
         }

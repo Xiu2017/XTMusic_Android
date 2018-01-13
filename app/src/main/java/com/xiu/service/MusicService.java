@@ -126,7 +126,8 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                         }
                         break;
                     case Msg.PLAY_KUGOU_MUSIC:
-                        app.setIdx(1);
+                        int idx = intent.getIntExtra("idx", 0);
+                        app.setIdx(idx);
                         play();
                         break;
                 }
@@ -313,6 +314,11 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 
     //计算下一首音乐编号
     public void nextNum() {
+        if(app.getmList() != null && app.getmList().size() == 0 && mp != null){
+            manager.cancel(1);
+            mp.pause();
+            return;
+        }
         if (app.getIdx() < app.getmList().size()) {
             app.setIdx(app.getIdx() + 1);
         } else {

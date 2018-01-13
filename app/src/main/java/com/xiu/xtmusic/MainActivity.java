@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 query.setFilterById(mTaskId);
                 Cursor c = manager.query(query);
                 if(c.moveToFirst()) {
-                    Toast.makeText(MainActivity.this, "下载完成", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "下载完成，音乐保存在/XTMusic/Music目录下", Toast.LENGTH_SHORT).show();
                 }
             }/*else if(DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(intent.getAction())){
                 long[] ids = intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
@@ -716,7 +716,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //暂停&播放
     public void playPause(View view) {
-        if (app.getMp() != null) {
+        if(app.getmList() != null && app.getmList().size() != 0 && app.getMp() != null) {
             if (app.getMp().isPlaying()) {
                 app.getMp().pause();
                 playBtn.setImageResource(R.mipmap.play_red);
@@ -763,7 +763,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //改变样式
     public void refresh() {
-        if (app.getmList() == null || app.getIdx() < 1) return;
+        if (app.getmList() == null || app.getmList().size() == 0 || app.getIdx() < 1){
+            title.setText("炫听音乐");
+            artist.setText("炫酷生活");
+            album.setImageResource(R.mipmap.ic_launcher);
+            playBtn.setImageResource(R.mipmap.play_red);
+            currentTime.setProgress(0);
+            return;
+        }
         Music music = app.getmList().get(app.getIdx() - 1);
         //playBtn.setImageResource(R.mipmap.pause_red);
         title.setText(music.getTitle());
@@ -784,6 +791,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         list.clear();
         list.addAll(app.getmList());
         adapter.notifyDataSetChanged();
+
+        if (list.size() == 0)
+            emptyList.setVisibility(View.VISIBLE);
+        else
+            emptyList.setVisibility(View.GONE);
     }
 
     //重置当前播放歌曲编号
@@ -792,10 +804,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             Music music = list.get(i);
             TextView name = findViewById(R.id.musicName);
             TextView size = findViewById(R.id.musicSize);
-/*            Log.d("name", name.getText()+","+music.getName());
+            Log.d("name", name.getText()+","+music.getName());
             Log.d("boolean", name.getText().toString().equals(music.getName())+"");
             Log.d("szie", size.getText()+","+music.getSize());
-            Log.d("boolean", size.getText().toString().equals(music.getSize()+"")+"");*/
+            Log.d("boolean", size.getText().toString().equals(music.getSize()+"")+"");
             if (name.getText().toString().equals(music.getName()) && size.getText().toString().equals(music.getSize()+"")) {
                 app.setIdx(i + 1);
                 break;

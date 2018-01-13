@@ -63,11 +63,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         dao = new MusicDao(this);
         initStatusBar();
         initView();
-
-        page = 1;
         list = new ArrayList<>();
         adapter = new SearchListAdapter(list, SearchActivity.this);
+        //seaList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         seaList.setAdapter(adapter);
+
+        page = 1;
 
         seaList.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -77,6 +78,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                         if (isListViewReachBottomEdge(absListView) && list.size() > 0) {
                             loadlist.setVisibility(View.VISIBLE);
                             page++;
+                            Log.d("page", page+"");
                             searchMusic(absListView);
                         }
                         break;
@@ -133,16 +135,33 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                     break;
                 case Msg.GET_MUSIC_PATH:
                     Music music = intent.getParcelableExtra("music");
+                    int idx = isExist(music);
                     dao.addToHistory(music);
                     app.getMusicData(SearchActivity.this);
                     Intent broadcast = new Intent();
                     broadcast.setAction("sBroadcast");
                     broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
+                    broadcast.putExtra("idx", idx);
                     context.sendBroadcast(broadcast);
                     break;
             }
         }
     };
+
+    //判断歌曲是否存在本地列表
+    public int isExist(Music music){
+        List<Music> list = app.getmList();
+        for (int i = 0; i < list.size(); i++){
+            Music m = list.get(i);
+            if(music.getName().equals(m.getName()) && music.getSize() == m.getSize()){
+                if(!m.getPath().contains("http://")){
+                    Toast.makeText(this, "此歌曲已下载，为您播放本地文件", Toast.LENGTH_SHORT).show();
+                }
+                return i+1;
+            }
+        }
+        return 1;
+    }
 
     @Override
     public void onClick(View view) {
@@ -203,7 +222,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
         if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-            page = 0;
+            page = 1;
             list.clear();
             searchMusic(textView);
             return true;

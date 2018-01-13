@@ -248,7 +248,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                 sendBroadcast(intent);
                 break;
             case R.id.playBtn:
-                if(app.getMp() != null) {
+                if(app.getmList() != null && app.getmList().size() != 0 && app.getMp() != null) {
                     if (app.getMp().isPlaying()) {
                         app.getMp().pause();
                         playBtn.setImageDrawable(getResources().getDrawable(R.drawable.btm_play_sel));

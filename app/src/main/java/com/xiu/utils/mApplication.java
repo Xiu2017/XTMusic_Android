@@ -105,12 +105,12 @@ public class mApplication extends Application {
                     music.setSize(size);
 
                     //从数据库删除相同歌曲
-                    new Thread(new Runnable() {
+/*                    new Thread(new Runnable() {
                         @Override
-                        public void run() {
-                            dao.delMusicByNameAndTime(name, size);
-                        }
-                    }).start();
+                        public void run() {*/
+                    dao.delMusicByNameAndTime(name, size);
+/*                        }
+                    }).start();*/
 
                     //匹配父目录
                     String parentPath = path.replace("/" + name, "");
