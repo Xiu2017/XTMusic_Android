@@ -4,17 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.v4.view.MenuItemCompat;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -29,22 +26,26 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.xiu.adapter.MusicListAdapter;
 import com.xiu.adapter.SearchListAdapter;
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.entity.MusicList;
+import com.xiu.utils.CallBack;
+import com.xiu.utils.FileUtils;
 import com.xiu.utils.KuGouMusic;
+import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
 
-import java.lang.reflect.Method;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener,
         TextView.OnEditorActionListener {
 
+    private boolean isLoadlist;
+    private boolean isLoadPath;
     private int page;
     private ProgressBar loadlist;
     private mApplication app;
@@ -65,7 +66,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         initView();
         list = new ArrayList<>();
         adapter = new SearchListAdapter(list, SearchActivity.this);
-        //seaList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         seaList.setAdapter(adapter);
 
         page = 1;
@@ -75,10 +75,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             public void onScrollStateChanged(AbsListView absListView, int i) {
                 switch (i) {
                     case SCROLL_STATE_IDLE:
-                        if (isListViewReachBottomEdge(absListView) && list.size() > 0) {
+                        if (isListViewReachBottomEdge(absListView) && list.size() > 0 && !isLoadlist) {
+                            isLoadlist = true;
                             loadlist.setVisibility(View.VISIBLE);
                             page++;
-                            Log.d("page", page+"");
                             searchMusic(absListView);
                         }
                         break;
@@ -122,42 +122,114 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         public void onReceive(Context context, Intent intent) {
             switch (intent.getIntExtra("what", 0)) {
                 case Msg.SEARCH_RESULT:
-                    MusicList musicList = intent.getParcelableExtra("list");
-                    List<Music> mList = musicList.getList();
-                    if(mList == null || mList.size() == 0){
-                        Toast.makeText(SearchActivity.this, "已经是最后一页啦", Toast.LENGTH_SHORT).show();
+                    final MusicList musicList = intent.getParcelableExtra("list");
+                    if (musicList == null || musicList.getList() == null || musicList.getList().size() == 0) {
+                        Toast.makeText(SearchActivity.this, "没有更多的数据了", Toast.LENGTH_SHORT).show();
                         loadlist.setVisibility(View.GONE);
                         return;
                     }
-                    list.addAll(mList);
-                    adapter.notifyDataSetChanged();
-                    loadlist.setVisibility(View.GONE);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            list.addAll(musicList.getList());
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.notifyDataSetChanged();
+                                    loadlist.setVisibility(View.GONE);
+                                }
+                            });
+                        }
+                    }).start();
+                    isLoadlist = false;
                     break;
                 case Msg.GET_MUSIC_PATH:
-                    Music music = intent.getParcelableExtra("music");
+                    isLoadPath = false;
+                    final Music music = intent.getParcelableExtra("music");
                     int idx = isExist(music);
                     dao.addToHistory(music);
-                    app.getMusicData(SearchActivity.this);
+                    app.getmList().clear();
+                    app.setmList(dao.getMusicData());
                     Intent broadcast = new Intent();
                     broadcast.setAction("sBroadcast");
                     broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
                     broadcast.putExtra("idx", idx);
                     context.sendBroadcast(broadcast);
+                    adapter.notifyDataSetChanged();
+                    saveLrcAlbum(music);
+                    break;
+                case Msg.GET_MUSIC_ERROR:
+                    isLoadPath = false;
+                    loadlist.setVisibility(View.GONE);
+                    Toast.makeText(SearchActivity.this, "拉取歌曲链接失败", Toast.LENGTH_SHORT).show();
+                    break;
+                case Msg.SEARCH_ERROR:
+                    isLoadlist = false;
+                    loadlist.setVisibility(View.GONE);
+                    Toast.makeText(SearchActivity.this, "获取列表失败", Toast.LENGTH_SHORT).show();
+                    break;
+                case Msg.PLAY_COMPLETION:  //播放完成
+                    //改变样式
+                    adapter.notifyDataSetChanged();
                     break;
             }
         }
     };
 
-    //判断歌曲是否存在本地列表
-    public int isExist(Music music){
-        List<Music> list = app.getmList();
-        for (int i = 0; i < list.size(); i++){
-            Music m = list.get(i);
-            if(music.getName().equals(m.getName()) && music.getSize() == m.getSize()){
-                if(!m.getPath().contains("http://")){
-                    Toast.makeText(this, "此歌曲已下载，为您播放本地文件", Toast.LENGTH_SHORT).show();
+    //保存歌词和专辑
+    public void saveLrcAlbum(final Music music){
+        //保存歌词
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String temp = getApplicationContext().getFilesDir().getAbsolutePath() + "/lyric/" + music.getName();
+                final String lrcPath = temp.substring(0, temp.lastIndexOf(".")) + ".lrc";
+                String lrc = music.getLyric();
+                File file = new File(lrcPath);
+                if(!file.exists() && lrc != null){
+                    FileUtils.TextToFile(lrcPath, lrc);
+                    Music m = music;
+                    m.setLyric(null);
+                    dao.addToHistory(m);
                 }
-                return i+1;
+            }
+        }).start();
+
+        //保存专辑
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String innerSDPath = new StorageUtil(SearchActivity.this).innerSDPath();
+                String name = music.getName();
+                final String toPath = innerSDPath + "/XTMusic/AlbumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
+                File file = new File(toPath);
+                if (!file.exists() && music.getAlbumPath() != null) {
+                    FileUtils.downLoadFile(music.getAlbumPath(), toPath, new CallBack() {
+                        @Override
+                        public void success(String str) {
+                            //刷新通知栏
+                            Intent intent = new Intent();
+                            intent.setAction("sBroadcast");
+                            intent.putExtra("what", Msg.NOTIFICATION_REFRESH);
+                            sendBroadcast(intent);
+                        }
+                        @Override
+                        public void failed(String str) {
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    //判断歌曲是否存在本地列表
+    public int isExist(Music music) {
+        if (app.getmList() == null || app.getmList().size() == 0) return 1;
+        List<Music> list = app.getmList();
+        for (int i = 0; i < list.size(); i++) {
+            Music m = list.get(i);
+            if (music.getName().equals(m.getName()) && music.getSize() == m.getSize()) {
+                return i + 1;
             }
         }
         return 1;
@@ -166,31 +238,39 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-/*            case R.id.searchBtn:
-                searchMusic(view);
-                break;*/
             case R.id.list_item:
                 clickItem(view);
                 break;
         }
     }
 
+    //去到专辑界面
+    public void openAlbum() {
+        Intent intent = new Intent(this, AlbumActivity.class);
+        startActivity(intent);
+    }
+
+
     //搜索歌曲
     public void searchMusic(View view) {
         loadlist.setVisibility(View.VISIBLE);
         String str = keywork.getText().toString();
-        if (str.length() == 0) {
+        if (str.replaceAll(" ", "").length() == 0) {
+            loadlist.setVisibility(View.GONE);
+            Toast.makeText(this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
             return;
         }
         new KuGouMusic(this).search(str, page);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        //imm.hideSoftInputFromWindow(view, InputMethodManager.HIDE_NOT_ALWAYS);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     //处理并播放歌曲
     public void clickItem(View view) {
-        new KuGouMusic(this).musicUrl(getMusicByNum(view));
+        if (!isLoadPath) {
+            isLoadPath = true;
+            new KuGouMusic(this).musicUrl(getMusicByNum(view));
+        }
     }
 
 
@@ -210,6 +290,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         IntentFilter filter = new IntentFilter();
         filter.addAction("sBroadcast");
         registerReceiver(seaBroadcast, filter);
+
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -236,7 +320,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             final View bottomChildView = listView.getChildAt(listView.getLastVisiblePosition() - listView.getFirstVisiblePosition());
             result = (listView.getHeight() >= bottomChildView.getBottom());
         }
-        ;
         return result;
     }
 }

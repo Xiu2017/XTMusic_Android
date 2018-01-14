@@ -59,7 +59,7 @@
             android:background="#20000000"
             android:gravity="center"
             android:onClick="onClick"
-            android:text="搜索在线歌曲"
+            android:text="搜索"
             android:textColor="#99FFFFFF"
             android:textSize="15sp" />
     </LinearLayout>
@@ -175,7 +175,7 @@
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:layout_above="@+id/btmBar"
-        android:max="1000" />
+        android:max="0" />
 
     <LinearLayout
         android:id="@+id/btmBar"

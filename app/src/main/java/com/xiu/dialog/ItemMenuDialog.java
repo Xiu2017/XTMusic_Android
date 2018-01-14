@@ -2,27 +2,16 @@ package com.xiu.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.xiu.adapter.PlayListAdapter;
-import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
-import com.xiu.utils.mApplication;
 import com.xiu.xtmusic.R;
-
-import java.util.List;
-import java.util.zip.Inflater;
 
 /**
  * Created by xiu on 2017/12/31.
@@ -44,9 +33,9 @@ public class ItemMenuDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(music.getPath().contains("http://")){
+        if (music.getPath().contains("http://")) {
             setContentView(R.layout.dialog_item_menu_kugou);
-        }else {
+        } else {
             setContentView(R.layout.dialog_item_menu);
         }
     }

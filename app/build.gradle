@@ -31,6 +31,7 @@ dependencies {
     compile 'net.qiujuer.genius:blur:2.0.0-beta4'
     compile 'de.hdodenhof:circleimageview:2.2.0'
     compile 'com.google.code.gson:gson:2.8.2'
+    //compile 'com.carson_ho:SearchLayout:1.0.1'
     implementation files('libs/okhttp-3.9.1.jar')
     implementation files('libs/okio-1.13.0.jar')
 }

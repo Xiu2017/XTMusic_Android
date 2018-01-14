@@ -29,7 +29,7 @@ public class ImageUtil {
         //float ww = 100f;// 这里设置宽度为50f
         // 缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
         int be = 1;// be=1表示不缩放
-        if ((w > h && w > ww)||(w == h && w > ww && h > hh)) {// 如果宽度大的话根据宽度固定大小缩放
+        if ((w > h && w > ww) || (w == h && w > ww && h > hh)) {// 如果宽度大的话根据宽度固定大小缩放
             be = (int) (newOpts.outWidth / ww);
         } else if (w < h && h > hh) {// 如果高度高的话根据宽度固定大小缩放
             be = (int) (newOpts.outHeight / hh);

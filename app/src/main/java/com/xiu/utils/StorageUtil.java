@@ -53,7 +53,7 @@ public class StorageUtil {
     public String getStorageState(String path) {
         try {
             StorageManager sm = (StorageManager) context.getSystemService(STORAGE_SERVICE);
-            Method getVolumeStateMethod = StorageManager.class.getMethod("getVolumeState", new Class[] {String.class});
+            Method getVolumeStateMethod = StorageManager.class.getMethod("getVolumeState", new Class[]{String.class});
             String state = (String) getVolumeStateMethod.invoke(sm, path);
             return state;
         } catch (Exception e) {
@@ -65,19 +65,19 @@ public class StorageUtil {
 
     //获取已挂载内置SD卡路径
     public String innerSDPath() {
-        StorageUtil storageUtil= new StorageUtil(context);
+        StorageUtil storageUtil = new StorageUtil(context);
         String innerSD = storageUtil.getPrimaryStoragePath();
-        if(innerSD != null && storageUtil.getStorageState(innerSD).equals(Environment.MEDIA_MOUNTED)){
+        if (innerSD != null && storageUtil.getStorageState(innerSD).equals(Environment.MEDIA_MOUNTED)) {
             return innerSD;
         }
         return null;
     }
 
     //获取已挂载外置SD卡路径
-    public String extSDPath(){
-        StorageUtil storageUtil= new StorageUtil(context);
+    public String extSDPath() {
+        StorageUtil storageUtil = new StorageUtil(context);
         String extSD = storageUtil.getSecondaryStoragePath();
-        if(extSD != null && storageUtil.getStorageState(extSD).equals(Environment.MEDIA_MOUNTED)){
+        if (extSD != null && storageUtil.getStorageState(extSD).equals(Environment.MEDIA_MOUNTED)) {
             return extSD;
         }
         return null;

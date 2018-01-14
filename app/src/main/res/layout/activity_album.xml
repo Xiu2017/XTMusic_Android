@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="#CCCCCC">
 
     <ImageView
         android:id="@+id/albumbg"
@@ -102,11 +102,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center">
 
-            <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+            <de.hdodenhof.circleimageview.CircleImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/album"
                 android:layout_width="320dp"
                 android:layout_height="320dp"
-                android:src="@mipmap/album_max"
+                android:src="@mipmap/album_default"
                 app:civ_border_color="#30000000"
                 app:civ_border_width="5dp" />
         </LinearLayout>

@@ -13,8 +13,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.RemoteControlClient;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
@@ -24,10 +26,12 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.support.v7.app.AlertDialog;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -37,6 +41,7 @@ import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.utils.ImageUtil;
 import com.xiu.utils.NetworkState;
+import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
 import com.xiu.xtmusic.AlbumActivity;
 import com.xiu.xtmusic.MainActivity;
@@ -52,9 +57,9 @@ import java.util.TimerTask;
  * Created by xiu on 2017/12/27.
  */
 
-public class MusicService extends Service implements MediaPlayer.OnBufferingUpdateListener{
+public class MusicService extends Service implements MediaPlayer.OnBufferingUpdateListener {
 
-    private MusicDao dao;
+    private MusicDao dao = new MusicDao(this);
     private boolean soonExit;
     private boolean timerCk;
     private TimerTask task;
@@ -104,9 +109,9 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                         timerCk = intent.getBooleanExtra("checked", false);
                         if (time != 0) {
                             Date date = new Date();
-                            date.setTime(System.currentTimeMillis()+time);
+                            date.setTime(System.currentTimeMillis() + time);
                             time = date.getTime();
-                            if(timer != null){
+                            if (timer != null) {
                                 timer.cancel();
                                 task.cancel();
                             }
@@ -116,7 +121,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                         }
                         break;
                     case Msg.TIMER_CLEAR:
-                        if(timer != null){
+                        if (timer != null) {
                             timer.cancel();
                             task.cancel();
                             timerCk = false;
@@ -127,6 +132,9 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                         break;
                     case Msg.PLAY_KUGOU_MUSIC:
                         int idx = intent.getIntExtra("idx", 0);
+                        if (app.getIdx() != 1 && app.getIdx() == idx) {
+                            return;
+                        }
                         app.setIdx(idx);
                         play();
                         break;
@@ -157,7 +165,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                 Intent broadcast = new Intent("sBroadcast");
                 broadcast.putExtra("what", Msg.CURRENTTIME);
                 broadcast.putExtra("current", mp.getCurrentPosition());
-                if(timer != null){
+                if (timer != null) {
                     broadcast.putExtra("time", time);
                 }
                 sendBroadcast(broadcast);
@@ -167,11 +175,15 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 
     //播放
     public void play() {
-        if(app.getIdx() == 0) return;
+        if (app.getmList() == null || app.getmList().size() == 0 || app.getIdx() == 0) return;
         Music music = app.getmList().get(app.getIdx() - 1);
-        if((music.getPath().contains("http://") && !testNetwork()) && !new File(music.getPath()).exists()){
+        if ((music.getPath().contains("http://") && !testNetwork()) || (!music.getPath().contains("http://") && !new File(music.getPath()).exists())) {
             nextNum();
-            play();
+            if(app.getIdx() != app.getmList().size()){
+                play();
+            }else {
+                app.setIdx(0);
+            }
             //Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -194,9 +206,9 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
-                    if(soonExit){
+                    if (soonExit) {
                         exitApp();
-                    }else {
+                    } else {
                         nextNum();
                         senRefresh();
                         play();
@@ -204,8 +216,8 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                 }
             });
             //addToHistory(music);  //将音乐添加到最近播放列表
-            if(music.getPath().contains("http://")){
-                Toast.makeText(this, "正在缓冲音乐", Toast.LENGTH_SHORT).show();
+            if (music.getPath().contains("http://")) {
+                Toast.makeText(MusicService.this, "正在缓冲音乐", Toast.LENGTH_SHORT).show();
                 senRefresh();  //通知activity更新信息
                 musicNotification();  //更新状态栏信息
             }
@@ -216,60 +228,35 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
     }
 
 
-
     //网络状态检测
-    public boolean testNetwork(){
+    public boolean testNetwork() {
         //Log.d("net", NetworkState.GetNetype(this)+"");
-        switch (NetworkState.GetNetype(this)){
+        switch (NetworkState.GetNetype(this)) {
             //返回值 -1：没有网络  1：WIFI网络2：wap网络3：net网络
             case -1:
                 Toast.makeText(this, "当前没有网络连接", Toast.LENGTH_SHORT).show();
                 return false;
             case 1:
-                if(!NetworkState.isNetworkConnected(this)){
+                if (!NetworkState.isNetworkConnected(this)) {
                     Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
                     return false;
-                }else {
+                } else {
                     return true;
                 }
             case 2:
             case 3:
-                if(!NetworkState.isMobileConnected(this)){
+                if (!NetworkState.isMobileConnected(this)) {
                     Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
                     return false;
-                }else if(!app.isMobileConnected()) {
+                } else if (!app.isMobileConnected()) {
                     app.setMobileConnected(true);
                     Toast.makeText(this, "当前正在使用移动网络播放，请注意您的流量哦！", Toast.LENGTH_LONG).show();
                     return true;
-/*                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setMessage("使用移动网络播放将会消耗大量流量，是否继续？");
-                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    });
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            app.setMobileConnected(true);
-                            dialogInterface.dismiss();
-                            play();
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-                    dialog.show();*/
-                }else if(app.isMobileConnected()){
+                } else if (app.isMobileConnected()) {
                     return true;
                 }
         }
         return false;
-    }
-
-    //将音乐添加到最近播放列表
-    public void addToHistory(Music music){
-        dao.addToHistory(music);
     }
 
     //通知activity更新信息
@@ -301,20 +288,22 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
     }
 
     //用于定时退出
-    class Task extends TimerTask{
+    class Task extends TimerTask {
         @Override
         public void run() {
-            if(timerCk){
+            if (timerCk) {
                 soonExit = true;
-            }else {
+            } else {
                 exitApp();
             }
         }
-    };
+    }
+
+    ;
 
     //计算下一首音乐编号
     public void nextNum() {
-        if(app.getmList() != null && app.getmList().size() == 0 && mp != null){
+        if (app.getmList() != null && app.getmList().size() == 0 && mp != null) {
             manager.cancel(1);
             mp.pause();
             return;
@@ -337,7 +326,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 
     //通知栏通知
     public void musicNotification() {
-        if (app.getIdx() == 0) return;
+        if (app.getmList() == null || app.getmList().size() == 0 || app.getIdx() == 0) return;
         Music music = app.getmList().get(app.getIdx() - 1);
         Notification notification = new Notification();
         notification.icon = R.mipmap.ic_launcher;
@@ -362,8 +351,18 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
         //为通知绑定数据
         views.setTextViewText(R.id.title, music.getTitle());
         views.setTextViewText(R.id.singer, music.getArtist());
-        Bitmap bitmap = app.getAlbumBitmap(this, music.getPath(), R.mipmap.ic_launcher);
-        views.setImageViewBitmap(R.id.albumImg, ImageUtil.getimage(bitmap, 100f, 100f));
+
+        String innerSDPath = new StorageUtil(this).innerSDPath();
+        String name = music.getName();
+        String toPath = innerSDPath + "/XTMusic/albumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
+        File file = new File(toPath);
+        if (file.exists()) {
+            Bitmap bitmap = BitmapFactory.decodeFile(toPath);
+            views.setImageViewBitmap(R.id.albumImg, ImageUtil.getimage(bitmap, 100f, 100f));
+        } else {
+            Bitmap bitmap = dao.getAlbumBitmap(music.getPath(), R.mipmap.ic_launcher);
+            views.setImageViewBitmap(R.id.albumImg, ImageUtil.getimage(bitmap, 100f, 100f));
+        }
         //播放按钮的更新
         if (app.getMp() != null && app.getMp().isPlaying()) {
             views.setImageViewResource(R.id.playBtn, R.mipmap.pause_red);
@@ -433,7 +432,6 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
         super.onCreate();
         app = (mApplication) getApplicationContext();
         app.setmService(this);
-        dao = new MusicDao(this);
 
         //动态注册一个广播接收者
         IntentFilter filter = new IntentFilter();

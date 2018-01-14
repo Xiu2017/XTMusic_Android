@@ -26,13 +26,15 @@ public class LyricListAdapter extends BaseAdapter {
         this.context = context;
         this.idx = idx;
     }
+
     @Override
     public int getCount() {
         if (list != null) {
-            return list.size()+1;
+            return list.size() + 1;
         }
         return 0;
     }
+
     @Override
     public Object getItem(int i) {
         if (list != null) {
@@ -40,6 +42,7 @@ public class LyricListAdapter extends BaseAdapter {
         }
         return null;
     }
+
     @Override
     public long getItemId(int i) {
         if (list != null) {
@@ -47,6 +50,7 @@ public class LyricListAdapter extends BaseAdapter {
         }
         return 0;
     }
+
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         TextView line;
@@ -59,15 +63,15 @@ public class LyricListAdapter extends BaseAdapter {
         }
         if (list != null && list.size() > 1) {
             //Log.d("line", list.size()+"");
-            if(i == 0){
+            if (i == 0) {
                 line.setText("");
                 return view;
             }
-            LrcRow lrcRow = list.get(i-1);
+            LrcRow lrcRow = list.get(i - 1);
             line.setText(lrcRow.content + "");
             if (idx == i) {
                 line.setTextColor(context.getResources().getColor(R.color.colorWrite));
-            }else {
+            } else {
                 line.setTextColor(context.getResources().getColor(R.color.colorLrc));
             }
             return view;

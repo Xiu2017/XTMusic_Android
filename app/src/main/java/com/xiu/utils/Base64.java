@@ -11,7 +11,7 @@ public class Base64 {
     //将 s 进行 BASE64 编码
     public static String getBASE64(String s) {
         if (s == null) return null;
-        return (new BASE64Encoder()).encode( s.getBytes() );
+        return (new BASE64Encoder()).encode(s.getBytes());
     }
 
     //将 BASE64 编码的字符串 s 进行解码

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
@@ -12,43 +13,53 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <EditText
+<!--        <scut.carson_ho.searchview.SearchView
             android:id="@+id/keyword"
-            android:imeOptions="actionSearch"
-            android:hint="歌曲/歌手/专辑"
-            android:textSize="15dp"
-            android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:singleLine="true"
             android:layout_width="match_parent"
-            android:layout_height="50dp" />
-<!--        <Button
-            android:id="@+id/searchBtn"
-            android:text="搜索"
-            android:onClick="onClick"
-            android:layout_weight="5"
-            android:layout_width="match_parent"
-            android:layout_height="50dp" />-->
-<!--        <EditText
-            android:textColor="@android:color/white"
-            android:textSize="15dp"
-            android:textCursorDrawable="@drawable/color_cursor"
-            android:layout_width="match_parent"
-            android:layout_height="50dp" />-->
+            android:layout_height="wrap_content"
+            app:searchBlockColor="#ffffff"
+            app:searchBlockHeight="150"
+            app:textColorSearch="#000000"
+            app:textHintSearch="歌曲/歌手/专辑"
+            app:textSizeSearch="5sp" />-->
+
+            <EditText
+                android:id="@+id/keyword"
+                android:imeOptions="actionSearch"
+                android:hint="歌曲/歌手/专辑"
+                android:textSize="15dp"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:singleLine="true"
+                android:layout_width="match_parent"
+                android:layout_height="50dp" />
+        <!--        <Button
+                    android:id="@+id/searchBtn"
+                    android:text="搜索"
+                    android:onClick="onClick"
+                    android:layout_weight="5"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp" />-->
+        <!--        <EditText
+                    android:textColor="@android:color/white"
+                    android:textSize="15dp"
+                    android:textCursorDrawable="@drawable/color_cursor"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp" />-->
     </LinearLayout>
 
     <ListView
-        android:layout_below="@id/topBar"
         android:id="@+id/searchList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/topBar"
         android:divider="@null" />
 
     <ProgressBar
         android:id="@+id/loadlist"
-        android:layout_centerVertical="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:visibility="gone" />
 
 </RelativeLayout>

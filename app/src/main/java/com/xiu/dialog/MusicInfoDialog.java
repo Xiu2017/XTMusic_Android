@@ -14,6 +14,8 @@ import com.xiu.entity.Music;
 import com.xiu.utils.TimeFormatUtil;
 import com.xiu.xtmusic.R;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by xiu on 2017/12/31.
  */
@@ -71,10 +73,10 @@ public class MusicInfoDialog extends Dialog{
         fileName.setText(name.substring(0, name.lastIndexOf(".")));
         musicTime.setText(TimeFormatUtil.secToTime(music.getTime()/1000));
 
+        DecimalFormat df = new DecimalFormat("#0.00");
         float temp = music.getSize()/1024.0f/1024.0f;
-        float size = (float)(Math.round(temp*100))/100;
 
-        fileSize.setText(size+"M");
+        fileSize.setText(df.format(temp)+"M");
 
         fileType.setText(name.substring(name.lastIndexOf(".")+1));
         filePath.setText(music.getPath().replace("/"+name, ""));

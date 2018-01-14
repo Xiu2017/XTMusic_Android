@@ -34,7 +34,7 @@ public class KuGouLrc {
 
                     JSONObject json1 = new JSONObject(res);  //字符串读取为JSON
                     JSONArray json2 = json1.getJSONArray("candidates");
-                    if(json2.length() == 0) {
+                    if (json2.length() == 0) {
                         callBack.failed("找不到歌词");
                         return;
                     }

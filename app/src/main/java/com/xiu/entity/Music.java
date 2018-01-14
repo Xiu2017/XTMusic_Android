@@ -11,7 +11,7 @@ import com.j256.ormlite.table.DatabaseTable;
  */
 
 @DatabaseTable
-public class Music implements Parcelable{
+public class Music implements Parcelable {
     @DatabaseField(generatedId = true)
     private int _id;  //编号
     @DatabaseField
@@ -29,7 +29,7 @@ public class Music implements Parcelable{
     @DatabaseField
     private String parentPath;  //父级目录
     @DatabaseField
-    private String lyricPath;  //歌词路径
+    private String lyric;  //歌词路径
     @DatabaseField
     private String albumPath;  //专辑图片路径
     @DatabaseField
@@ -40,7 +40,7 @@ public class Music implements Parcelable{
     public Music() {
     }
 
-    public Music(int _id, String name, String title, String artist, String album, int time, String path, String parentPath, String lyricPath, String albumPath, long date, long size) {
+    public Music(int _id, String name, String title, String artist, String album, int time, String path, String parentPath, String lyric, String albumPath, long date, long size) {
         this._id = _id;
         this.name = name;
         this.title = title;
@@ -49,7 +49,7 @@ public class Music implements Parcelable{
         this.time = time;
         this.path = path;
         this.parentPath = parentPath;
-        this.lyricPath = lyricPath;
+        this.lyric = lyric;
         this.albumPath = albumPath;
         this.date = date;
         this.size = size;
@@ -65,7 +65,7 @@ public class Music implements Parcelable{
         path = in.readString();
         parentPath = in.readString();
         albumPath = in.readString();
-        lyricPath = in.readString();
+        lyric = in.readString();
         date = in.readLong();
         size = in.readLong();
     }
@@ -154,12 +154,12 @@ public class Music implements Parcelable{
         this.albumPath = albumPath;
     }
 
-    public String getLyricPath() {
-        return lyricPath;
+    public String getLyric() {
+        return lyric;
     }
 
-    public void setLyricPath(String lyricPath) {
-        this.lyricPath = lyricPath;
+    public void setLyric(String lyric) {
+        this.lyric = lyric;
     }
 
     public long getDate() {
@@ -194,7 +194,7 @@ public class Music implements Parcelable{
         parcel.writeString(path);
         parcel.writeString(parentPath);
         parcel.writeString(albumPath);
-        parcel.writeString(lyricPath);
+        parcel.writeString(lyric);
         parcel.writeLong(date);
         parcel.writeLong(size);
     }

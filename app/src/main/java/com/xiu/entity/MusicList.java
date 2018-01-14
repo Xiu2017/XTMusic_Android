@@ -9,7 +9,7 @@ import java.util.List;
  * Created by xiu on 2018/1/11.
  */
 
-public class MusicList implements Parcelable{
+public class MusicList implements Parcelable {
 
     private List<Music> list;
 
