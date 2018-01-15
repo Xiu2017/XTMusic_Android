@@ -124,19 +124,19 @@ public class SearchListAdapter extends BaseAdapter {
 
             if (isExist(music)) {
                 musicItem.kugou.setImageResource(R.mipmap.phone);
-                if(music.getPath().contains(innerSD+"")){
-                    musicItem.musicPath.setText(music.getPath().replace(innerSD+"","").replace("/"+music.getName(), ""));
-                }else if (music.getPath().contains(extSD+"")){
-                    musicItem.musicPath.setText(music.getPath().replace(extSD+"","").replace("/"+music.getName(), ""));
-                }else {
+                if (music.getPath().contains(innerSD + "")) {
+                    musicItem.musicPath.setText(music.getPath().replace(innerSD + "", "").replace("/" + music.getName(), ""));
+                } else if (music.getPath().contains(extSD + "")) {
+                    musicItem.musicPath.setText(music.getPath().replace(extSD + "", "").replace("/" + music.getName(), ""));
+                } else {
                     musicItem.musicPath.setText("");
                 }
             } else {
                 musicItem.kugou.setImageResource(R.mipmap.kugou);
                 //显示大小
                 DecimalFormat df = new DecimalFormat("#0.00");
-                float temp = music.getSize()/1024.0f/1024.0f;
-                musicItem.musicPath.setText(df.format(temp)+"M");
+                float temp = music.getSize() / 1024.0f / 1024.0f;
+                musicItem.musicPath.setText(df.format(temp) + "M");
             }
 
             return view;

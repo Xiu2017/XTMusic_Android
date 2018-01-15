@@ -3,6 +3,7 @@
     android:background="@android:color/transparent"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <TextView
         android:id="@+id/line"
         android:text="如果这都不算爱"

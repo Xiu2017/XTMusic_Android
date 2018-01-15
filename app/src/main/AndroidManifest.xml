@@ -18,8 +18,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".AlbumActivity"
             android:screenOrientation="portrait"
@@ -40,7 +39,8 @@
         <activity
             android:name=".AboutActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".SplashActivity"
+        <activity
+            android:name=".SplashActivity"
             android:screenOrientation="portrait"
             android:theme="@style/FullScreen">
             <intent-filter>

@@ -300,7 +300,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
             lrcList.setAdapter(lyricListAdapter);
             int padding = lrcList.getHeight() / 2;
             lrcList.setPadding(0, padding - 208, 0, padding);
-        }else {
+        } else {
             KuGouLrc.searchLrc(music.getTitle(), music.getTime(), new CallBack() {
                 @Override
                 public void success(final String str) {
@@ -395,6 +395,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
 
     //更新界面信息
     Bitmap bitmap = null;
+
     public void refresh() {
         //耗时操作，异步
         new Thread(new Runnable() {
@@ -419,7 +420,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                             setAlbum(bitmap);
                         }
                     });
-                }else {
+                } else {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

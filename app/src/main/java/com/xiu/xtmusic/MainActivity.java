@@ -359,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     public void downloadMusic(Music music) {
         //下载链接校验，防止用户操作过快
-        if(!music.getPath().contains("http://")) return;
+        if (!music.getPath().contains("http://")) return;
 
         Toast.makeText(this, "开始下载\"" + music.getArtist() + " - " + music.getTitle() + "\"，请在通知栏查看下载进度", Toast.LENGTH_SHORT).show();
         //创建下载任务,downloadUrl就是下载链接
@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     //分享音乐
     public void shareMusic(Music music) {
         File file = new File(music.getPath());
-        if(!file.exists()){
+        if (!file.exists()) {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_SEND);
@@ -542,9 +542,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //改变样式
     Bitmap bitmap;
+
     public void refresh() {
         if (app.getmList() == null || app.getmList().size() == 0 || app.getIdx() == 0) {
-            if(app.getmList() != null && app.getmList().size() == 0 && app.getMp() != null && app.getMp().isPlaying()){
+            if (app.getmList() != null && app.getmList().size() == 0 && app.getMp() != null && app.getMp().isPlaying()) {
                 app.getMp().pause();
                 emptyList.setVisibility(View.VISIBLE);
                 sBroadcast = new Intent();
@@ -765,19 +766,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     }
 
     //同步最新列表
-    public void refreshList(){
+    public void refreshList() {
         List<Music> mList = app.getmList();
         if (mList == null || mList.size() == 0) {
             updateList();
-        }else if(mList.size() != list.size()){
+        } else if (mList.size() != list.size()) {
             list.clear();
             list.addAll(mList);
             adapter.notifyDataSetChanged();
-        }else {
-            for(Music music : mList){
-                if(!music.getPath().contains("http://")){
+        } else {
+            for (Music music : mList) {
+                if (!music.getPath().contains("http://")) {
                     File file = new File(music.getPath());
-                    if(!file.exists()){
+                    if (!file.exists()) {
                         updateList();
                         break;
                     }

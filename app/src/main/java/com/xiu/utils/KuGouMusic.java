@@ -44,7 +44,7 @@ public class KuGouMusic {
         final MusicList musicList = new MusicList();
         final List<Music> list = new ArrayList<>();
         final List<Music> local = dao.getMusicData(keywork);
-        if(page == 1){
+        if (page == 1) {
             list.addAll(local);
         }
         String searchUrl = "http://mobilecdn.kugou.com/api/v3/search/song?format=jsonp&keyword=" + keywork +
@@ -58,10 +58,15 @@ public class KuGouMusic {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                if (page == 1) {
+                    musicList.setList(list);
+                }
                 Intent kBroadcast = new Intent();
                 kBroadcast.setAction("sBroadcast");
                 kBroadcast.putExtra("what", Msg.SEARCH_ERROR);
+                kBroadcast.putExtra("list", musicList);
                 context.sendBroadcast(kBroadcast);
+                e.printStackTrace();
             }
 
             @Override
@@ -83,7 +88,7 @@ public class KuGouMusic {
                             music.setName(music.getArtist() + " - " + music.getTitle() + ".mp3");
                             music.setPath(obj.getString("hash"));
                             //52Log.d("hash", music.getPath());
-                            if(!dao.isExist(local, music)){
+                            if (!dao.isExist(local, music)) {
                                 list.add(music);
                             }
                         }
@@ -100,7 +105,6 @@ public class KuGouMusic {
                     kBroadcast.setAction("sBroadcast");
                     kBroadcast.putExtra("what", Msg.SEARCH_ERROR);
                     context.sendBroadcast(kBroadcast);
-                    e.printStackTrace();
                 }
                 //Log.d("call result", str);
             }
@@ -114,7 +118,7 @@ public class KuGouMusic {
         StorageUtil util = new StorageUtil(context);
         String innerSD = util.innerSDPath();
         String extSD = util.extSDPath();
-        if (hash.contains("http://") || hash.contains(innerSD+"") || hash.contains(extSD+"")) {
+        if (hash.contains("http://") || hash.contains(innerSD + "") || hash.contains(extSD + "")) {
             Intent kBroadcast = new Intent();
             kBroadcast.setAction("sBroadcast");
             kBroadcast.putExtra("what", Msg.GET_MUSIC_PATH);

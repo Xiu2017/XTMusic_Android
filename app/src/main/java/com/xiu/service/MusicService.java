@@ -179,9 +179,9 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
         Music music = app.getmList().get(app.getIdx() - 1);
         if ((music.getPath().contains("http://") && !testNetwork()) || (!music.getPath().contains("http://") && !new File(music.getPath()).exists())) {
             nextNum();
-            if(app.getIdx() != app.getmList().size()){
+            if (app.getIdx() != app.getmList().size()) {
                 play();
-            }else {
+            } else {
                 app.setIdx(0);
             }
             //Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();

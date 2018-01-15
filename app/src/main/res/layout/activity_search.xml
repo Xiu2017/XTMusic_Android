@@ -13,26 +13,26 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-<!--        <scut.carson_ho.searchview.SearchView
-            android:id="@+id/keyword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:searchBlockColor="#ffffff"
-            app:searchBlockHeight="150"
-            app:textColorSearch="#000000"
-            app:textHintSearch="歌曲/歌手/专辑"
-            app:textSizeSearch="5sp" />-->
+        <!--        <scut.carson_ho.searchview.SearchView
+                    android:id="@+id/keyword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:searchBlockColor="#ffffff"
+                    app:searchBlockHeight="150"
+                    app:textColorSearch="#000000"
+                    app:textHintSearch="歌曲/歌手/专辑"
+                    app:textSizeSearch="5sp" />-->
 
-            <EditText
-                android:id="@+id/keyword"
-                android:imeOptions="actionSearch"
-                android:hint="歌曲/歌手/专辑"
-                android:textSize="15dp"
-                android:gravity="center"
-                android:paddingHorizontal="12dp"
-                android:singleLine="true"
-                android:layout_width="match_parent"
-                android:layout_height="50dp" />
+        <EditText
+            android:id="@+id/keyword"
+            android:imeOptions="actionSearch"
+            android:hint="歌曲/歌手/专辑"
+            android:textSize="15dp"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:singleLine="true"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
         <!--        <Button
                     android:id="@+id/searchBtn"
                     android:text="搜索"

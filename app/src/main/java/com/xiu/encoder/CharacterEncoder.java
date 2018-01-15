@@ -210,7 +210,7 @@ public abstract class CharacterEncoder {
      */
     private byte[] getBytes(ByteBuffer bb) {
         /*
-		 * This should never return a BufferOverflowException, as we're 213 *
+         * This should never return a BufferOverflowException, as we're 213 *
 		 * careful to allocate just the right amount. 214
 		 */
         byte[] buf = null;

@@ -10,22 +10,21 @@
         android:layout_centerVertical="true"
         android:orientation="vertical">
 
-<!--        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginBottom="12dp"
-            android:scaleType="fitXY"
-            android:src="@mipmap/xiu" />-->
+        <!--        <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="12dp"
+                    android:scaleType="fitXY"
+                    android:src="@mipmap/xiu" />-->
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/album"
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:layout_gravity="center"
             android:src="@mipmap/xiu"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -37,16 +36,16 @@
             android:textColor="@android:color/black"
             android:textSize="15sp" />
 
-<!--        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:autoLink="web"
-            android:gravity="center"
-            android:text="@string/github"
-            android:textColorLink="#05D23A31"
-            android:textSize="15sp" />-->
+        <!--        <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:autoLink="web"
+                    android:gravity="center"
+                    android:text="@string/github"
+                    android:textColorLink="#05D23A31"
+                    android:textSize="15sp" />-->
     </LinearLayout>
 
     <TextView

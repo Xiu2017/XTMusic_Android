@@ -80,7 +80,7 @@
                 android:maxLines="1"
                 android:text="10.00M"
                 android:textColor="@color/list_artist"
-                android:textSize="12sp"/>
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout

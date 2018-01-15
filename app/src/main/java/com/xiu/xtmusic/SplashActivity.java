@@ -76,14 +76,14 @@ public class SplashActivity extends Activity {
     }
 
     //创建.nomedia
-    public void createNoMedia(){
+    public void createNoMedia() {
         String innerSD = new StorageUtil(this).innerSDPath();
-        String path = innerSD+"/XTMusic/albumImg/.nomedia";
+        String path = innerSD + "/XTMusic/albumImg/.nomedia";
         File file = new File(path);
-        if(!file.getParentFile().exists()){
+        if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
-        if(!file.exists()){
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {

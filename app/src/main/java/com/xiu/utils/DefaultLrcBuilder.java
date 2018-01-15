@@ -17,7 +17,7 @@ public class DefaultLrcBuilder {
 
     public List<LrcRow> getLrcRows(String rawLrc) {
         //Log.d(TAG,"getLrcRows by rawString");
-        if(rawLrc == null || rawLrc.length() == 0){
+        if (rawLrc == null || rawLrc.length() == 0) {
             //Log.e(TAG,"getLrcRows rawLrc null or empty");
             return null;
         }
@@ -25,9 +25,9 @@ public class DefaultLrcBuilder {
         BufferedReader br = new BufferedReader(reader);
         String line = null;
         List<LrcRow> rows = new ArrayList<LrcRow>();
-        try{
+        try {
             //循环地读取歌词的每一行
-            do{
+            do {
                 line = br.readLine();
                 /**
                  一行歌词只有一个时间的  例如：徐佳莹   《我好想你》
@@ -38,18 +38,18 @@ public class DefaultLrcBuilder {
                  [02:45.69][02:42.20][02:37.69][01:10.60]就在记忆里画一个叉
                  **/
                 //Log.d(TAG,"lrc raw line: " + line);
-                if(line != null && line.length() > 0){
+                if (line != null && line.length() > 0) {
                     //解析每一行歌词 得到每行歌词的集合，因为有些歌词重复有多个时间，就可以解析出多个歌词行来
                     List<LrcRow> lrcRows = LrcRow.createRows(line);
-                    if(lrcRows != null && lrcRows.size() > 0){
-                        for(LrcRow row : lrcRows){
+                    if (lrcRows != null && lrcRows.size() > 0) {
+                        for (LrcRow row : lrcRows) {
                             rows.add(row);
                         }
                     }
                 }
-            }while(line != null);
+            } while (line != null);
 
-            if( rows.size() > 0 ){
+            if (rows.size() > 0) {
                 // 根据歌词行的时间排序
                 Collections.sort(rows);
 /*                if(rows!=null&&rows.size()>0){
@@ -58,10 +58,10 @@ public class DefaultLrcBuilder {
                     }
                 }*/
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             //Log.e(TAG,"parse exceptioned:" + e.getMessage());
             return null;
-        }finally{
+        } finally {
             try {
                 br.close();
             } catch (IOException e) {

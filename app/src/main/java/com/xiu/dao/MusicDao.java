@@ -132,17 +132,23 @@ public class MusicDao {
                 Music music;
                 do {
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                    if(!new File(path).exists()){
+                    if (!new File(path).exists()) {
                         continue;
                     }
                     String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                     String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                     if ("<unknown>".equals(artist)) {
-                        artist = "未知";
+                        String[] str = title.split(" - ");
+                        if (str.length == 2) {
+                            artist = str[0];
+                            title = str[1];
+                        } else {
+                            artist = "未知";
+                        }
                     }
                     String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-                    if (isRepeat(list, title, artist, album)) continue;    //去掉重复歌曲
                     final String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+                    if (isRepeat(list, title, artist, album)) continue;    //去掉重复歌曲
                     int time = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                     final long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
 
@@ -189,14 +195,14 @@ public class MusicDao {
                 MediaStore.Audio.Media.SIZE  //大小
         };
         //要筛选的格式
-        String where = "("+MediaStore.Audio.Media.DISPLAY_NAME + " like '%.mp3'" +
+        String where = "(" + MediaStore.Audio.Media.DISPLAY_NAME + " like '%.mp3'" +
                 " or " + MediaStore.Audio.Media.DISPLAY_NAME + " like '%.flac'" +
                 " or " + MediaStore.Audio.Media.DISPLAY_NAME + " like '%.m4a')" +
-        //要筛选的条件
-                " and (" + MediaStore.Audio.Media.TITLE + " like '%"+keywork+"%'" +
-                " or " + MediaStore.Audio.Media.ARTIST + " like '%"+keywork+"%'" +
-                " or " + MediaStore.Audio.Media.ALBUM + " like '%"+keywork+"%'" +
-                " or " + MediaStore.Audio.Media.DISPLAY_NAME + " like '%"+keywork+"%')";
+                //要筛选的条件
+                " and (" + MediaStore.Audio.Media.TITLE + " like '%" + keywork + "%'" +
+                " or " + MediaStore.Audio.Media.ARTIST + " like '%" + keywork + "%'" +
+                " or " + MediaStore.Audio.Media.ALBUM + " like '%" + keywork + "%'" +
+                " or " + MediaStore.Audio.Media.DISPLAY_NAME + " like '%" + keywork + "%')";
 
         ContentResolver cr = context.getContentResolver();
         if (cr != null) {
@@ -210,13 +216,19 @@ public class MusicDao {
                 Music music;
                 do {
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                    if(!new File(path).exists()){
+                    if (!new File(path).exists()) {
                         continue;
                     }
                     String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                     String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                     if ("<unknown>".equals(artist)) {
-                        artist = "未知";
+                        String[] str = title.split(" - ");
+                        if (str.length == 2) {
+                            artist = str[0];
+                            title = str[1];
+                        } else {
+                            artist = "未知";
+                        }
                     }
                     String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                     if (isRepeat(list, title, artist, album)) continue;    //去掉重复歌曲

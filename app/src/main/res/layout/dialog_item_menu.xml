@@ -83,17 +83,17 @@
         android:textColor="@android:color/black"
         android:textSize="15dp" />
 
-<!--    <Button
-        android:id="@+id/menu_alarm"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:onClick="onClick"
-        android:paddingLeft="15dp"
-        android:text="设为闹铃"
-        android:textColor="@android:color/black"
-        android:textSize="15dp" />-->
+    <!--    <Button
+            android:id="@+id/menu_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:onClick="onClick"
+            android:paddingLeft="15dp"
+            android:text="设为闹铃"
+            android:textColor="@android:color/black"
+            android:textSize="15dp" />-->
 
     <Button
         android:id="@+id/menu_info"

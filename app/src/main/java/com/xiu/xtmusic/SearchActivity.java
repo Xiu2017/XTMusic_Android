@@ -166,6 +166,27 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 case Msg.SEARCH_ERROR:
                     isLoadlist = false;
                     loadlist.setVisibility(View.GONE);
+                    if (page == 1) {
+                        final MusicList mList = intent.getParcelableExtra("list");
+                        if (mList == null || mList.getList() == null || mList.getList().size() == 0) {
+                            Toast.makeText(SearchActivity.this, "没有更多的数据了", Toast.LENGTH_SHORT).show();
+                            loadlist.setVisibility(View.GONE);
+                            return;
+                        }
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                list.addAll(mList.getList());
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.notifyDataSetChanged();
+                                        loadlist.setVisibility(View.GONE);
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
                     Toast.makeText(SearchActivity.this, "获取列表失败", Toast.LENGTH_SHORT).show();
                     break;
                 case Msg.PLAY_COMPLETION:  //播放完成
@@ -177,7 +198,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     };
 
     //保存歌词和专辑
-    public void saveLrcAlbum(final Music music){
+    public void saveLrcAlbum(final Music music) {
         //保存歌词
         new Thread(new Runnable() {
             @Override
@@ -186,7 +207,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 final String lrcPath = temp.substring(0, temp.lastIndexOf(".")) + ".lrc";
                 String lrc = music.getLyric();
                 File file = new File(lrcPath);
-                if(!file.exists() && lrc != null){
+                if (!file.exists() && lrc != null && lrc.length() > 10) {
                     FileUtils.TextToFile(lrcPath, lrc);
                     Music m = music;
                     m.setLyric(null);
@@ -213,6 +234,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                             intent.putExtra("what", Msg.NOTIFICATION_REFRESH);
                             sendBroadcast(intent);
                         }
+
                         @Override
                         public void failed(String str) {
                         }

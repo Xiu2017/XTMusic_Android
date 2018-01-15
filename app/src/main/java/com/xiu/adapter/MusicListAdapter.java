@@ -33,16 +33,16 @@ public class MusicListAdapter extends BaseAdapter {
     private Context context;
     private MainActivity activity;
     private mApplication app;
-    private String innerSD;
-    private String extSD;
+    //private String innerSD;
+    //private String extSD;
 
     public MusicListAdapter(List<Music> list, MainActivity activity) {
         this.list = list;
         this.context = activity;
         this.activity = activity;
         this.app = (mApplication) activity.getApplicationContext();
-        innerSD = new StorageUtil(context).innerSDPath();
-        extSD = new StorageUtil(context).extSDPath();
+        //innerSD = new StorageUtil(context).innerSDPath();
+        //extSD = new StorageUtil(context).extSDPath();
     }
 
     @Override
@@ -93,22 +93,23 @@ public class MusicListAdapter extends BaseAdapter {
             musicItem.musicNum.setText((i + 1) + "");
             musicItem.musicTitle.setText(title);
             musicItem.musicArtist.setText(music.getArtist());
-            musicItem.musicPath.setPadding(0,0,0,0);
+            musicItem.musicPath.setPadding(0, 0, 0, 0);
             musicItem.list_item = view.findViewById(R.id.list_item);
             if (music.getPath().contains("http://") || new File(music.getPath()).exists()) {
                 if (music.getPath().contains("http://")) {
                     musicItem.kugou.setImageResource(R.mipmap.kugou);
                     //显示大小
                     DecimalFormat df = new DecimalFormat("#0.00");
-                    float temp = music.getSize()/1024.0f/1024.0f;
-                    musicItem.musicPath.setText(df.format(temp)+"M");
+                    float temp = music.getSize() / 1024.0f / 1024.0f;
+                    musicItem.musicPath.setText(df.format(temp) + "M");
                 } else {
                     musicItem.kugou.setImageResource(R.mipmap.phone);
-                    if(music.getPath().contains(innerSD+"")){
+                    musicItem.musicPath.setText("");
+/*                    if(music.getPath().contains(innerSD+"")){
                         musicItem.musicPath.setText(music.getPath().replace(innerSD+"","").replace("/"+music.getName(), ""));
                     }else if (music.getPath().contains(extSD+"")){
                         musicItem.musicPath.setText(music.getPath().replace(extSD+"","").replace("/"+music.getName(), ""));
-                    }
+                    }*/
                 }
                 musicItem.list_item.setOnClickListener(new View.OnClickListener() {
                     @Override
