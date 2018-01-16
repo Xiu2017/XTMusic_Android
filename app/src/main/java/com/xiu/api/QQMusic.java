@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.xiu.dao.MusicDao;
+import com.xiu.encoder.UnicodeDecoder;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.entity.MusicList;
@@ -39,14 +40,14 @@ public class QQMusic {
     }
 
     //查询列表
-    //http://s.music.qq.com/fcgi-bin/music_search_new_platform?t=0&aggr=1&cr=1&loginUin=0&format=json&inCharset=GB2312&outCharset=utf-8¬ice=0&platform=jqminiframe.json&needNewCode=0&catZhida=0&remoteplace=sizer.newclient.next_song&w=搜索&n=数量&p=页数
+    //http://s.music.qq.com/fcgi-bin/music_search_new_platform?t=0&aggr=1&cr=1&loginUin=0&format=json&inCharset=GB2312&outCharset=utf-8&platform=jqminiframe.json&needNewCode=0&catZhida=0&remoteplace=sizer.newclient.next_song&w=搜索&n=数量&p=页数
     public void search(final String keywork, final int page) {
         final MusicList musicList = new MusicList();
         final List<Music> list = new ArrayList<>();
         final List<Music> local = dao.getMusicData(keywork);
         String searchUrl = "http://s.music.qq.com/fcgi-bin/music_search_new_platform?" +
                 "t=0&aggr=1&cr=1&loginUin=0&format=json&" +
-                "inCharset=GB2312&outCharset=utf-8¬ice=0&platform=jqminiframe.json&" +
+                "inCharset=GB2312&outCharset=utf-8&platform=jqminiframe.json&" +
                 "needNewCode=0&catZhida=0&remoteplace=sizer.newclient.next_song&" +
                 "w=" + keywork + "&n=" + 30 + "&p=" + page;
 
@@ -81,14 +82,20 @@ public class QQMusic {
                     if (json != null) {
                         for (int i = 0; i < json.length(); i++) {
                             JSONObject obj = json.getJSONObject(i);
+                            if(obj.toString().contains("&amp;#")){
+                                continue;
+                            }
                             Music music = new Music();
 
                             String[] arr = obj.getString("f").split("\\|");
-                            String lrcId = "";
-                            String size = "0";
-                            String id = "";
-                            String albumId = "";
-                            int time = 0;
+                            //Log.d("arr", obj.getString("f")+"");
+                            //String unstr = obj.getString("f").replace("&amp;#", "%u");
+                            //Log.d("unstr", unstr+"");
+                            String lrcId;
+                            String size;
+                            String id;
+                            String albumId;
+                            int time;
                             if (arr.length == 25) {
                                 lrcId = arr[0];
                                 size = arr[12];
@@ -100,11 +107,12 @@ public class QQMusic {
                             }
                             music.setLyric(lrcId);
                             music.setPath(id);
-                            music.setSize(Long.parseLong(size));
+                            music.setSize(Long.parseLong(size)/5-10240);
                             music.setAlbumPath(albumId);
                             music.setTime(time);
 
                             music.setTitle(obj.getString("fsong"));
+                            //Log.i("title", music.getTitle());
 
                             String fsinger2 = "";
                             if (obj.has("fsinger2") && obj.getString("fsinger2").length() > 0) {
@@ -157,7 +165,7 @@ public class QQMusic {
             return;
         }
 
-        String url = "http://base.music.qq.com/fcgi-bin/fcg_musicexpress.fcg?json=3&loginUin=0&format=jsonp&inCharset=GB2312&outCharset=GB2312&notice=0&platform=yqq&needNewCode=0";
+        final String url = "http://base.music.qq.com/fcgi-bin/fcg_musicexpress.fcg?json=3&loginUin=0&format=jsonp&inCharset=GB2312&outCharset=GB2312&notice=0&platform=yqq&needNewCode=0";
         //构建一个请求对象
         Request request = new Request.Builder().url(url).build();
         //构建一个Call对象
@@ -182,6 +190,7 @@ public class QQMusic {
 
                     //根据获取到的key值拼接音乐链接
                     String urlstr = json.getString("sip");
+                    //Log.d("sip", urlstr);
                     String[] urls = urlstr.replace("[", "")
                             .replace("]", "")
                             .replace("\"", "")

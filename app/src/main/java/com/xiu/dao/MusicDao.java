@@ -162,6 +162,7 @@ public class MusicDao {
                     music.setSize(size);
 
                     //从数据库删除相同歌曲
+                    //Log.d("name", name);
                     delMusicByNameAndTime(name, size);
 
                     //匹配父目录

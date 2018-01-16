@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //初始化列表
     public void initList() {
-        list = new ArrayList<Music>();
+        list = new ArrayList<>();
         adapter = new MusicListAdapter(list, MainActivity.this);
         musicList.setAdapter(adapter);
         musicList.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -365,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         //创建下载任务,downloadUrl就是下载链接
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(music.getPath()));
         //指定下载路径和下载文件名
-        request.setDestinationInExternalPublicDir("/XTMusic/Music", music.getArtist() + " - " + music.getTitle() + ".mp3");
+        request.setDestinationInExternalPublicDir("/XTMusic/Music", music.getName());
         //获取下载管理器
         DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         //将下载任务加入下载队列，否则不会进行下载
@@ -402,6 +402,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
                 String extSD = new StorageUtil(MainActivity.this).extSDPath();
                 boolean isUrl = music.getPath().contains("http://");
                 File file = null;
@@ -427,6 +428,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     app.setIdx(idx);
                 }
 
+                //删除专辑图片
                 String innerSDPath = new StorageUtil(MainActivity.this).innerSDPath();
                 String name = music.getName();
                 final String path = innerSDPath + "/XTMusic/AlbumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
@@ -442,7 +444,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         null);
                 adapter.notifyDataSetChanged();
                 Toast.makeText(MainActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
-                dialogInterface.dismiss();
             }
         });
         AlertDialog dialog = builder.create();

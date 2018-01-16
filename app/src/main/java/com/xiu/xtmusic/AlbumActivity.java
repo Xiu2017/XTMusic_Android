@@ -199,11 +199,11 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
 
     //歌词滚动
     public void playLyric(int current) {
-        if (rows == null || current == 0)
+        if (lyricListAdapter == null || rows == null || current == 0)
             return;
         for (int i = 0; i < rows.size(); i++) {
             LrcRow row = rows.get(i);
-            if (lyricListAdapter != null && current <= row.time) {
+            if (current <= row.time) {
                 lyricListAdapter.setIdx(i);
                 lyricListAdapter.notifyDataSetChanged();
                 lrcList.smoothScrollToPosition(i);

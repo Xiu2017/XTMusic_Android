@@ -313,6 +313,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 adapter.notifyDataSetChanged();
                 loadlist.setVisibility(View.GONE);
                 isLoadlist = false;
+                if(list.size() == 0){
+                    Toast.makeText(this, "没有搜索到符合条件的歌曲", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case 1:
                 new KuGouMusic(this).search(str, page);
