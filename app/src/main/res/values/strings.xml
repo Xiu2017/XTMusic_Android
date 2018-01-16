@@ -27,5 +27,5 @@
 
     <string name="about">黄修情\nS3SJ130 Android兴趣班\n指导老师 涂乾文\n2018/1/14</string>
     <string name="github">https://github.com/Xiu2017/XTMusic_Android</string>
-    <string name="tip">在线内容由酷狗音乐提供\n仅用于学习交流</string>
+    <string name="tip">在线内容由酷狗音乐&amp;QQ音乐提供\n仅用于学习交流</string>
 </resources>

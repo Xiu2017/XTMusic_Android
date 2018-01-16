@@ -4,13 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -27,13 +24,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xiu.adapter.SearchListAdapter;
+import com.xiu.api.QQMusic;
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.entity.MusicList;
 import com.xiu.utils.CallBack;
 import com.xiu.utils.FileUtils;
-import com.xiu.utils.KuGouMusic;
+import com.xiu.api.KuGouMusic;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
 
@@ -44,9 +42,11 @@ import java.util.List;
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener,
         TextView.OnEditorActionListener {
 
+    private int musicHttp;
     private boolean isLoadlist;
     private boolean isLoadPath;
     private int page;
+    private TextView local, kghttp, qqhttp;
     private ProgressBar loadlist;
     private mApplication app;
     private MusicDao dao;
@@ -75,7 +75,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             public void onScrollStateChanged(AbsListView absListView, int i) {
                 switch (i) {
                     case SCROLL_STATE_IDLE:
-                        if (isListViewReachBottomEdge(absListView) && list.size() > 0 && !isLoadlist) {
+                        if (isListViewReachBottomEdge(absListView) && list.size() > 0 && !isLoadlist && musicHttp != 0) {
                             isLoadlist = true;
                             loadlist.setVisibility(View.VISIBLE);
                             page++;
@@ -84,7 +84,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                         break;
                 }
             }
-
             @Override
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {
             }
@@ -96,6 +95,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         seaList = findViewById(R.id.searchList);
         keywork = findViewById(R.id.keyword);
         loadlist = findViewById(R.id.loadlist);
+        local = findViewById(R.id.local);
+        kghttp = findViewById(R.id.kghttp);
+        qqhttp = findViewById(R.id.qqhttp);
         keywork.setOnEditorActionListener(this);
     }
 
@@ -128,19 +130,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                         loadlist.setVisibility(View.GONE);
                         return;
                     }
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            list.addAll(musicList.getList());
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    adapter.notifyDataSetChanged();
-                                    loadlist.setVisibility(View.GONE);
-                                }
-                            });
-                        }
-                    }).start();
+                    list.addAll(musicList.getList());
+                    adapter.notifyDataSetChanged();
+                    loadlist.setVisibility(View.GONE);
                     isLoadlist = false;
                     break;
                 case Msg.GET_MUSIC_PATH:
@@ -263,7 +255,32 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.list_item:
                 clickItem(view);
                 break;
+            case R.id.local:
+                musicHttp = 0;
+                switchSearch(view);
+                break;
+            case R.id.kghttp:
+                musicHttp = 1;
+                switchSearch(view);
+                break;
+            case R.id.qqhttp:
+                musicHttp = 2;
+                switchSearch(view);
+                break;
         }
+    }
+
+    //切换搜索
+    public void switchSearch(View view){
+        list.clear();
+        page = 1;
+        int colorText = getResources().getColor(R.color.colorText);
+        local.setTextColor(colorText);
+        kghttp.setTextColor(colorText);
+        qqhttp.setTextColor(colorText);
+        TextView textView = (TextView) view;
+        textView.setTextColor(getResources().getColor(R.color.colorPrimary));
+        searchMusic(findViewById(R.id.keyword));
     }
 
     //去到专辑界面
@@ -282,16 +299,57 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             Toast.makeText(this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
             return;
         }
-        new KuGouMusic(this).search(str, page);
+        searchList(str);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    //搜索歌曲列表
+    public void searchList(String str){
+        switch (musicHttp){
+            case 0:
+                list.clear();
+                list.addAll(dao.getMusicData(str));
+                adapter.notifyDataSetChanged();
+                loadlist.setVisibility(View.GONE);
+                isLoadlist = false;
+                break;
+            case 1:
+                new KuGouMusic(this).search(str, page);
+                break;
+            case 2:
+                new QQMusic(this).search(str, page);
+                break;
+        }
     }
 
     //处理并播放歌曲
     public void clickItem(View view) {
         if (!isLoadPath) {
             isLoadPath = true;
-            new KuGouMusic(this).musicUrl(getMusicByNum(view));
+            getMusicPath(getMusicByNum(view));
+        }
+    }
+
+    //获取歌曲链接
+    public void getMusicPath(Music music){
+        switch (musicHttp){
+            case 0:
+                isLoadPath = false;
+                int idx = isExist(music);
+                Intent broadcast = new Intent();
+                broadcast.setAction("sBroadcast");
+                broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
+                broadcast.putExtra("idx", idx);
+                sendBroadcast(broadcast);
+                adapter.notifyDataSetChanged();
+                break;
+            case 1:
+                new KuGouMusic(this).musicUrl(music);
+                break;
+            case 2:
+                new QQMusic(this).musicUrl(music);
+                break;
         }
     }
 

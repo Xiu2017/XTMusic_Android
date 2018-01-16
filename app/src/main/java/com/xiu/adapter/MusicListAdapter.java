@@ -97,7 +97,11 @@ public class MusicListAdapter extends BaseAdapter {
             musicItem.list_item = view.findViewById(R.id.list_item);
             if (music.getPath().contains("http://") || new File(music.getPath()).exists()) {
                 if (music.getPath().contains("http://")) {
-                    musicItem.kugou.setImageResource(R.mipmap.kugou);
+                    if(music.getPath().contains("qqmusic")){
+                        musicItem.kugou.setImageResource(R.mipmap.qqmusic);
+                    }else {
+                        musicItem.kugou.setImageResource(R.mipmap.kugou);
+                    }
                     //显示大小
                     DecimalFormat df = new DecimalFormat("#0.00");
                     float temp = music.getSize() / 1024.0f / 1024.0f;

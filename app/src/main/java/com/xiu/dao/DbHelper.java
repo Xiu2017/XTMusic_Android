@@ -21,7 +21,7 @@ import java.util.Map;
 public class DbHelper extends OrmLiteSqliteOpenHelper {
 
     private static final String DATABASE_NAME = "xtmusic";
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -44,6 +44,7 @@ public class DbHelper extends OrmLiteSqliteOpenHelper {
     public void onUpgrade(SQLiteDatabase database, ConnectionSource connectionSource, int oldVersion, int newVersion) {
         try {
             TableUtils.dropTable(connectionSource, Music.class, true);
+            onCreate(database,connectionSource);
         } catch (SQLException e) {
             e.printStackTrace();
         }

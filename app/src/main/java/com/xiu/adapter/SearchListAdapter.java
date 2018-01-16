@@ -20,6 +20,7 @@ import com.xiu.xtmusic.SearchActivity;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by xiu on 2017/12/31.
@@ -132,7 +133,11 @@ public class SearchListAdapter extends BaseAdapter {
                     musicItem.musicPath.setText("");
                 }
             } else {
-                musicItem.kugou.setImageResource(R.mipmap.kugou);
+                if(music.getPath().length() == 14 || music.getPath().contains("qqmusic")){
+                    musicItem.kugou.setImageResource(R.mipmap.qqmusic);
+                }else {
+                    musicItem.kugou.setImageResource(R.mipmap.kugou);
+                }
                 //显示大小
                 DecimalFormat df = new DecimalFormat("#0.00");
                 float temp = music.getSize() / 1024.0f / 1024.0f;

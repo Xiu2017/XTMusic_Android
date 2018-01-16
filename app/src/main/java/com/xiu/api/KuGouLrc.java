@@ -1,8 +1,12 @@
-package com.xiu.utils;
+package com.xiu.api;
 
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.xiu.utils.Base64;
+import com.xiu.utils.CallBack;
+import com.xiu.utils.FileUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
