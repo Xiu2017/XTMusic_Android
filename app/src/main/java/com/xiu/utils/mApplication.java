@@ -2,26 +2,15 @@ package com.xiu.utils;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.xiu.dao.MusicDao;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.xiu.entity.Music;
 import com.xiu.service.MusicService;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -36,6 +25,24 @@ public class mApplication extends Application {
     private MusicService mService;  //音乐服务
     private MediaPlayer mp;
     private boolean mobileConnected;  //是否使用移动网络播放
+    private HttpProxyCacheServer proxy;  //缓存
+    private int playlist = 0;  //当前播放的列表
+    private int playmode = 0;  //播放模式
+
+    //缓存开源框架：https://github.com/danikula/AndroidVideoCache
+    //获取Proxy
+    public static HttpProxyCacheServer getProxy(Context context) {
+        mApplication app = (mApplication) context.getApplicationContext();
+        return app.proxy == null ? (app.proxy = app.newProxy()) : app.proxy;
+    }
+
+    //Proxy设置
+    private HttpProxyCacheServer newProxy() {
+        return new HttpProxyCacheServer.Builder(this)
+                .maxCacheSize(1024 * 1024 * 512)  //512M 缓存
+                .maxCacheFilesCount(100)  //最多缓存100首歌曲
+                .build();
+    }
 
     public List<Music> getmList() {
         return mList;
@@ -106,5 +113,21 @@ public class mApplication extends Application {
 
     public void setMobileConnected(boolean mobileConnected) {
         this.mobileConnected = mobileConnected;
+    }
+
+    public int getPlaylist() {
+        return playlist;
+    }
+
+    public void setPlaylist(int playlist) {
+        this.playlist = playlist;
+    }
+
+    public int getPlaymode() {
+        return playmode;
+    }
+
+    public void setPlaymode(int playmode) {
+        this.playmode = playmode;
     }
 }

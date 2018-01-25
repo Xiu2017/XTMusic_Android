@@ -12,7 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.danikula.videocache.CacheListener;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.xiu.entity.Music;
+import com.xiu.utils.FileUtils;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.TimeFormatUtil;
 import com.xiu.utils.mApplication;
@@ -27,12 +30,13 @@ import java.util.List;
  * Created by xiu on 2017/12/31.
  */
 
-public class MusicListAdapter extends BaseAdapter {
+public class MusicListAdapter extends BaseAdapter implements CacheListener {
 
     private List<Music> list;
     private Context context;
     private MainActivity activity;
     private mApplication app;
+    private OnCacheListener onCacheListener;  //音乐缓存
     //private String innerSD;
     //private String extSD;
 
@@ -43,6 +47,17 @@ public class MusicListAdapter extends BaseAdapter {
         this.app = (mApplication) activity.getApplicationContext();
         //innerSD = new StorageUtil(context).innerSDPath();
         //extSD = new StorageUtil(context).extSDPath();
+    }
+
+    public interface OnCacheListener {
+        void getCacheProgress(int progress);
+    }
+
+    @Override
+    public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
+        if (onCacheListener != null) {
+            onCacheListener.getCacheProgress(percentsAvailable);
+        }
     }
 
     @Override
@@ -105,9 +120,14 @@ public class MusicListAdapter extends BaseAdapter {
                     //显示大小
                     DecimalFormat df = new DecimalFormat("#0.00");
                     float temp = music.getSize() / 1024.0f / 1024.0f;
-                    musicItem.musicPath.setText(df.format(temp) + "M");
+                    //检查缓存
+                    if(app.getProxy(context).isCached(music.getPath())){
+                        musicItem.musicPath.setText("已缓存");
+                    }else {
+                        musicItem.musicPath.setText(df.format(temp) + "M");
+                    }
                 } else {
-                    musicItem.kugou.setImageResource(R.mipmap.phone);
+                    musicItem.kugou.setImageResource(0);
                     musicItem.musicPath.setText("");
 /*                    if(music.getPath().contains(innerSD+"")){
                         musicItem.musicPath.setText(music.getPath().replace(innerSD+"","").replace("/"+music.getName(), ""));
@@ -132,9 +152,17 @@ public class MusicListAdapter extends BaseAdapter {
             }
 
             //解决Item回收导致图标状态显示不正确的问题
-            if (app.getIdx() != 0 && app.getIdx() - 1 == i && music.getTitle() == app.getmList().get(app.getIdx() - 1).getTitle()) {
+            if (app.getmList() != null && app.getmList().size() != 0 && app.getIdx() != 0 && app.getIdx() - 1 == i && music.getPath().equals(app.getmList().get(app.getIdx() - 1).getPath())) {
                 musicItem.musicNum.setVisibility(View.GONE);
                 musicItem.playing.setVisibility(View.VISIBLE);
+                if(music.getPath().contains("http://") || new File(music.getPath()).exists()){
+                    musicItem.list_item.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            activity.openAlbum(view);
+                        }
+                    });
+                }
             } else {
                 musicItem.musicNum.setVisibility(View.VISIBLE);
                 musicItem.playing.setVisibility(View.GONE);

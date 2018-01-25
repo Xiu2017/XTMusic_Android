@@ -10,6 +10,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.danikula.videocache.CacheListener;
+import com.xiu.dao.MusicDao;
 import com.xiu.entity.Music;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
@@ -26,7 +28,7 @@ import java.util.regex.Pattern;
  * Created by xiu on 2017/12/31.
  */
 
-public class SearchListAdapter extends BaseAdapter {
+public class SearchListAdapter extends BaseAdapter{
 
     private List<Music> list;
     private Context context;
@@ -98,10 +100,10 @@ public class SearchListAdapter extends BaseAdapter {
             musicItem.musicArtist.setText(music.getArtist());
 
             //显示播放图标
-            if (app.getmList() != null && app.getmList().size() != 0 && app.getIdx() != 0) {
+            if (app.getmList() != null && app.getmList().size() != 0 && app.getIdx() != 0 && app.getmList().size() >= app.getIdx()) {
                 Music m = app.getmList().get(app.getIdx() - 1);
                 if (music != null && music.getName() != null && m != null && m.getName() != null) {
-                    if (m.getName().equals(music.getName() + "") && music.getSize() == m.getSize()) {
+                    if (m.getTitle().equals(music.getTitle() + "") && music.getSize() == m.getSize()) {
                         musicItem.musicNum.setVisibility(View.GONE);
                         musicItem.playing.setVisibility(View.VISIBLE);
                         musicItem.list_item.setOnClickListener(new View.OnClickListener() {
@@ -141,6 +143,11 @@ public class SearchListAdapter extends BaseAdapter {
                 //显示大小
                 DecimalFormat df = new DecimalFormat("#0.00");
                 float temp = music.getSize() / 1024.0f / 1024.0f;
+                //检查缓存
+/*                if(app.getProxy(context).isCached(music.getPath())){
+                    musicItem.musicPath.setText("已缓存");
+                }else {
+                }*/
                 musicItem.musicPath.setText(df.format(temp) + "M");
             }
 
@@ -157,13 +164,15 @@ public class SearchListAdapter extends BaseAdapter {
 
     //判断歌曲是否存在本地列表
     public boolean isExist(Music music) {
-        if (app.getmList() == null || app.getmList().size() == 0) return false;
-        List<Music> list = app.getmList();
-        for (int i = 0; i < list.size(); i++) {
-            Music m = list.get(i);
+/*        if (localList == null || localList.size() == 0) return false;
+        for (int i = 0; i < localList.size(); i++) {
+            Music m = localList.get(i);
             if (!m.getPath().contains("http://") && music.getName().equals(m.getName()) && music.getSize() == m.getSize()) {
                 return true;
             }
+        }*/
+        if(!music.getPath().contains("http://") && new File(music.getPath()).exists()){
+            return true;
         }
         return false;
     }

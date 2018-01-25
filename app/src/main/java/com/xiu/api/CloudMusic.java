@@ -20,20 +20,22 @@ import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Created by xiu on 2018/1/11.
+ * Created by xiu on 2018/1/23.
  */
 
-public class KuGouMusic {
+public class CloudMusic {
 
     private static Context context;
     private MusicDao dao;
 
-    public KuGouMusic(Context context) {
+    public CloudMusic(Context context) {
         this.context = context;
         this.dao = new MusicDao(context);
     }
@@ -44,11 +46,19 @@ public class KuGouMusic {
         final MusicList musicList = new MusicList();
         final List<Music> list = new ArrayList<>();
         final List<Music> local = dao.getMusicData(keywork);
-        String searchUrl = "http://mobilecdn.kugou.com/api/v3/search/song?format=jsonp&keyword=" + keywork +
-                "&page=" + page + "&pagesize=30&showtype=1";
-
+        String searchUrl = "http://music.163.com/api/search/get/web";
+        RequestBody body = new FormBody.Builder()
+                .add("csrf_token","")
+                .add("hlpretag","")
+                .add("hlposttag","")
+                .add("s","黄明志")
+                .add("type","1")
+                .add("offset","0")
+                .add("total","true")
+                .add("limit","10")
+                .build();
         //构建一个请求对象
-        Request request = new Request.Builder().url(searchUrl).build();
+        Request request = new Request.Builder().url(searchUrl).post(body).build();
         //构建一个Call对象
         okhttp3.Call call = new OkHttpClient().newCall(request);
         //异步执行请求
@@ -70,7 +80,9 @@ public class KuGouMusic {
             public void onResponse(Call call, Response response) throws IOException {
                 //通过response得到服务器响应内容
                 String str = response.body().string();
-                str = str.substring(1, str.length() - 1);
+                Log.d("str", str);
+                return;
+/*                str = str.substring(1, str.length() - 1);
                 try {
                     JSONArray json = new JSONObject(str)
                             .getJSONObject("data")
@@ -102,7 +114,7 @@ public class KuGouMusic {
                     kBroadcast.setAction("sBroadcast");
                     kBroadcast.putExtra("what", Msg.SEARCH_ERROR);
                     context.sendBroadcast(kBroadcast);
-                }
+                }*/
                 //Log.d("call result", str);
             }
         });
@@ -148,7 +160,7 @@ public class KuGouMusic {
                 //Log.d("str", str);
                 try {
                     JSONObject json = new JSONObject(str).getJSONObject("data");
-                    //Log.i("json", json.toString());
+                    Log.i("json", json.toString());
                     music.setPath(json.getString("play_url"));
                     music.setTime(json.getInt("timelength"));
                     //music.setName(music.getArtist()+" - "+music.getTitle()+".mp3");

@@ -21,7 +21,7 @@ import java.util.Map;
 public class DbHelper extends OrmLiteSqliteOpenHelper {
 
     private static final String DATABASE_NAME = "xtmusic";
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);

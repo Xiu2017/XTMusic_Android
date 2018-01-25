@@ -42,7 +42,7 @@ public class MusicDao {
     }
 
     //根据添加时间查询歌曲
-    public List selMusicByDate() {
+    public List<Music> selMusicByDate() {
         try {
             QueryBuilder builder = dao.queryBuilder();
             builder.orderBy("date", false);
@@ -92,7 +92,8 @@ public class MusicDao {
         music.setDate(System.currentTimeMillis());
         try {
             QueryBuilder builder = dao.queryBuilder();
-            builder.where().like("path", music.getPath());
+            builder.where().eq("name", music.getName())
+                    .and().eq("size", music.getSize());
             List<Music> list = builder.query();
             if (list != null && list.size() > 0) {
                 dao.update(music);
@@ -163,7 +164,7 @@ public class MusicDao {
 
                     //从数据库删除相同歌曲
                     //Log.d("name", name);
-                    delMusicByNameAndTime(name, size);
+                    //delMusicByNameAndTime(name, size);
 
                     //匹配父目录
                     //String parentPath = path.replace("/" + name, "");
@@ -175,12 +176,12 @@ public class MusicDao {
             }
             cursor.close();
         }
-        List<Music> dblist = selMusicByDate();
+/*        List<Music> dblist = selMusicByDate();
         if (dblist == null) {
             dblist = new ArrayList<>();
         }
-        dblist.addAll(list);
-        return dblist;
+        dblist.addAll(list);*/
+        return list;
     }
 
     //ContentResolver中获取音乐列表（带查询条件）

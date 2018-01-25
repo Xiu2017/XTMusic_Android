@@ -1,41 +1,30 @@
 package com.xiu.service;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.bluetooth.BluetoothHeadset;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.RemoteControlClient;
-import android.net.Uri;
-import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.content.WakefulBroadcastReceiver;
-import android.support.v7.app.AlertDialog;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.WindowManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.danikula.videocache.CacheListener;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
@@ -44,12 +33,13 @@ import com.xiu.utils.NetworkState;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
 import com.xiu.xtmusic.AlbumActivity;
-import com.xiu.xtmusic.MainActivity;
 import com.xiu.xtmusic.R;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -57,7 +47,7 @@ import java.util.TimerTask;
  * Created by xiu on 2017/12/27.
  */
 
-public class MusicService extends Service implements MediaPlayer.OnBufferingUpdateListener {
+public class MusicService extends Service implements MediaPlayer.OnBufferingUpdateListener{
 
     private MusicDao dao = new MusicDao(this);
     private boolean soonExit;
@@ -131,11 +121,11 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                         }
                         break;
                     case Msg.PLAY_KUGOU_MUSIC:
-                        int idx = intent.getIntExtra("idx", 0);
+/*                        int idx = intent.getIntExtra("idx", 0);
                         if (app.getIdx() != 1 && app.getIdx() == idx) {
                             return;
                         }
-                        app.setIdx(idx);
+                        app.setIdx(idx);*/
                         play();
                         break;
                 }
@@ -177,7 +167,18 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
     public void play() {
         if (app.getmList() == null || app.getmList().size() == 0 || app.getIdx() == 0) return;
         Music music = app.getmList().get(app.getIdx() - 1);
-        if ((music.getPath().contains("http://") && !testNetwork()) || (!music.getPath().contains("http://") && !new File(music.getPath()).exists())) {
+
+        //读取缓存
+        String path = music.getPath();
+        if(music.getPath().contains("http://")){
+            HttpProxyCacheServer proxy = app.getProxy(this);
+            //proxy.registerCacheListener(this, music.getPath());
+            path = proxy.getProxyUrl(music.getPath());
+            //Log.d("path", path);
+        }
+
+        if ((path.contains("http://") && !testNetwork()) || (!path.contains("http://") && !new File(path.replace("file://", "")).exists())) {
+            //Log.d("path", path);
             nextNum();
             if (app.getIdx() != app.getmList().size()) {
                 play();
@@ -187,12 +188,14 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             //Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (mp == null)
             mp = new MediaPlayer();
         app.setMp(mp);
+
         try {
             mp.reset();
-            mp.setDataSource(music.getPath());
+            mp.setDataSource(path);
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
@@ -209,14 +212,24 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                     if (soonExit) {
                         exitApp();
                     } else {
-                        nextNum();
-                        senRefresh();
+                        switch (app.getPlaymode()){
+                            case 0:
+                                nextNum();
+                                senRefresh();
+                                break;
+/*                            case 1:
+                                break;*/
+                            case 2:
+                                app.setIdx(new Random().nextInt(app.getmList().size()-1));
+                                senRefresh();
+                                break;
+                        }
                         play();
                     }
                 }
             });
             //addToHistory(music);  //将音乐添加到最近播放列表
-            if (music.getPath().contains("http://")) {
+            if (path.contains("http://")) {
                 Toast.makeText(MusicService.this, "正在缓冲音乐", Toast.LENGTH_SHORT).show();
                 senRefresh();  //通知activity更新信息
                 musicNotification();  //更新状态栏信息
@@ -226,6 +239,15 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             Toast.makeText(this, "无法播放该歌曲", Toast.LENGTH_SHORT).show();
         }
     }
+
+    //检查缓存的状态
+/*    private void checkCachedState(String url) {
+        HttpProxyCacheServer proxy = app.getProxy(this);
+        boolean fullyCached = proxy.isCached(url);
+        if (fullyCached && onCacheListener != null) {
+            onCacheListener.getCacheProgress(100);
+        }
+    }*/
 
 
     //网络状态检测
@@ -308,7 +330,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             mp.pause();
             return;
         }
-        if (app.getIdx() < app.getmList().size()) {
+        if (app.getmList() != null && app.getmList().size() >= app.getIdx()) {
             app.setIdx(app.getIdx() + 1);
         } else {
             app.setIdx(1);
@@ -428,10 +450,10 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
     }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
+    public int onStartCommand(Intent intent, int flags, int startId) {
         app = (mApplication) getApplicationContext();
         app.setmService(this);
+        app.setmList(new ArrayList<Music>());
 
         //动态注册一个广播接收者
         IntentFilter filter = new IntentFilter();
@@ -448,6 +470,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 
         //定时刷新播放进度
         runnable.run();
+        return super.onStartCommand(intent, flags, startId);
     }
 
     //销毁时
@@ -466,11 +489,12 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
         handler.removeCallbacksAndMessages(null);
         //释放MediaPlay
         if (mp != null) {
-
             mp.reset();
             mp.release();
             mp = null;
         }
+
+        //app.getProxy(getApplication()).unregisterCacheListener(this);
     }
 
     @Nullable

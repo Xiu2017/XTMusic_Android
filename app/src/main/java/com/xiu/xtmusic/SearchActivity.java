@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -23,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.xiu.adapter.MainPagerAdapter;
 import com.xiu.adapter.SearchListAdapter;
 import com.xiu.api.QQMusic;
 import com.xiu.dao.MusicDao;
@@ -45,15 +48,17 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private int musicHttp;
     private boolean isLoadlist;
     private boolean isLoadPath;
-    private int page;
+    private int pageKugou, pageQq;
     private TextView local, kghttp, qqhttp;
     private ProgressBar loadlist;
     private mApplication app;
     private MusicDao dao;
-    private List<Music> list;
-    private BaseAdapter adapter;
-    private ListView seaList;
+    private List<Music> list, kugou, qq;
+    private BaseAdapter adapter, kugouAdapter, qqAdapter;
+    private ListView seaList, seaKugou, seaQq;
     private EditText keywork;
+    private ViewPager viewPager;  //页视图
+    private View view1, view2, view3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,22 +68,49 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         app.addActivity(this);
         dao = new MusicDao(this);
         initStatusBar();
+        initViewPager();
         initView();
+
         list = new ArrayList<>();
         adapter = new SearchListAdapter(list, SearchActivity.this);
         seaList.setAdapter(adapter);
+        kugou = new ArrayList<>();
+        kugouAdapter = new SearchListAdapter(kugou, SearchActivity.this);
+        seaKugou.setAdapter(kugouAdapter);
+        qq = new ArrayList<>();
+        qqAdapter = new SearchListAdapter(qq, SearchActivity.this);
+        seaQq.setAdapter(qqAdapter);
 
-        page = 1;
-
-        seaList.setOnScrollListener(new AbsListView.OnScrollListener() {
+        pageKugou = 1;
+        pageQq = 1;
+        AbsListView.OnScrollListener mScroll = new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
                 switch (i) {
                     case SCROLL_STATE_IDLE:
-                        if (isListViewReachBottomEdge(absListView) && list.size() > 0 && !isLoadlist && musicHttp != 0) {
+                        List<Music> temp = new ArrayList();
+                        switch (viewPager.getCurrentItem()){
+                            case 0:
+                                temp = list;
+                                break;
+                            case 1:
+                                temp = kugou;
+                                break;
+                            case 2:
+                                temp = qq;
+                                break;
+                        }
+                        if (isListViewReachBottomEdge(absListView) && temp.size() > 0 && !isLoadlist && musicHttp != 0) {
                             isLoadlist = true;
                             loadlist.setVisibility(View.VISIBLE);
-                            page++;
+                            switch (viewPager.getCurrentItem()){
+                                case 1:
+                                    pageKugou++;
+                                    break;
+                                case 2:
+                                    pageQq++;
+                                    break;
+                            }
                             searchMusic(absListView);
                         }
                         break;
@@ -87,12 +119,80 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             @Override
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {
             }
+        };
+
+        seaList.setOnScrollListener(mScroll);
+        seaKugou.setOnScrollListener(mScroll);
+        seaQq.setOnScrollListener(mScroll);
+    }
+
+    //初始化viewPager
+    public void initViewPager() {
+        viewPager = findViewById(R.id.viewPager);
+        //查找布局文件
+        LayoutInflater inflater = getLayoutInflater();
+        view1 = inflater.inflate(R.layout.layout_list, null);
+        view2 = inflater.inflate(R.layout.layout_list, null);
+        view3 = inflater.inflate(R.layout.layout_list, null);
+
+        //将view装入数组中
+        List<View> pages = new ArrayList<>();  //所有页面
+        pages.add(view1);
+        pages.add(view2);
+        pages.add(view3);
+        //绑定适配器
+        viewPager.setAdapter(new MainPagerAdapter(pages));
+        //添加监听器
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                View view = findViewById(R.id.local);
+                switch (position) {
+                    case 0:
+                        musicHttp = 0;
+                        view = findViewById(R.id.local);
+                        if(list.size() == 0){
+                            switchSearch();
+                        }
+                        break;
+                    case 1:
+                        musicHttp = 1;
+                        view = findViewById(R.id.kghttp);
+                        if(kugou.size() == 0){
+                            switchSearch();
+                        }
+                        break;
+                    case 2:
+                        musicHttp = 2;
+                        view = findViewById(R.id.qqhttp);
+                        if(qq.size() == 0){
+                            switchSearch();
+                        }
+                        break;
+                }
+                int colorText = getResources().getColor(R.color.colorText);
+                local.setTextColor(colorText);
+                kghttp.setTextColor(colorText);
+                qqhttp.setTextColor(colorText);
+                TextView textView = (TextView) view;
+                textView.setTextColor(getResources().getColor(R.color.colorPrimary));
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
         });
     }
 
     //初始化布局元素
     private void initView() {
-        seaList = findViewById(R.id.searchList);
+        seaList = view1.findViewById(R.id.musicList);
+        seaKugou = view2.findViewById(R.id.musicList);
+        seaQq = view3.findViewById(R.id.musicList);
         keywork = findViewById(R.id.keyword);
         loadlist = findViewById(R.id.loadlist);
         local = findViewById(R.id.local);
@@ -124,31 +224,47 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         public void onReceive(Context context, Intent intent) {
             switch (intent.getIntExtra("what", 0)) {
                 case Msg.SEARCH_RESULT:
+                    isLoadlist = false;
                     final MusicList musicList = intent.getParcelableExtra("list");
                     if (musicList == null || musicList.getList() == null || musicList.getList().size() == 0) {
                         Toast.makeText(SearchActivity.this, "没有更多的数据了", Toast.LENGTH_SHORT).show();
                         loadlist.setVisibility(View.GONE);
                         return;
                     }
-                    list.addAll(musicList.getList());
-                    adapter.notifyDataSetChanged();
+                    switch (musicHttp){
+                        case 0:
+                            list.addAll(musicList.getList());
+                            adapter.notifyDataSetChanged();
+                            break;
+                        case 1:
+                            kugou.addAll(musicList.getList());
+                            kugouAdapter.notifyDataSetChanged();
+                            break;
+                        case 2:
+                            qq.addAll(musicList.getList());
+                            qqAdapter.notifyDataSetChanged();
+                            break;
+                    }
                     loadlist.setVisibility(View.GONE);
-                    isLoadlist = false;
                     break;
                 case Msg.GET_MUSIC_PATH:
                     isLoadPath = false;
-                    final Music music = intent.getParcelableExtra("music");
+                    Music music = intent.getParcelableExtra("music");
                     int idx = isExist(music);
                     dao.addToHistory(music);
-                    app.getmList().clear();
-                    app.setmList(dao.getMusicData());
+                    if(app.getmList() != null) app.getmList().clear();
+                    app.setmList(dao.selMusicByDate());
+                    app.setPlaylist(1);
+                    app.setIdx(idx);
                     Intent broadcast = new Intent();
                     broadcast.setAction("sBroadcast");
                     broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
-                    broadcast.putExtra("idx", idx);
-                    context.sendBroadcast(broadcast);
-                    adapter.notifyDataSetChanged();
+                    //broadcast.putExtra("idx", idx);
+                    sendBroadcast(broadcast);
                     saveLrcAlbum(music);
+                    adapter.notifyDataSetChanged();
+                    kugouAdapter.notifyDataSetChanged();
+                    qqAdapter.notifyDataSetChanged();
                     break;
                 case Msg.GET_MUSIC_ERROR:
                     isLoadPath = false;
@@ -158,6 +274,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 case Msg.SEARCH_ERROR:
                     isLoadlist = false;
                     loadlist.setVisibility(View.GONE);
+                    final int page = viewPager.getCurrentItem() == 1?pageKugou:pageQq;
                     if (page == 1) {
                         final MusicList mList = intent.getParcelableExtra("list");
                         if (mList == null || mList.getList() == null || mList.getList().size() == 0) {
@@ -168,11 +285,20 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                list.addAll(mList.getList());
+                                switch (page){
+                                    case 1:
+                                        kugou.addAll(mList.getList());
+                                        break;
+                                    case 2:
+                                        qq.addAll(mList.getList());
+                                        break;
+                                }
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         adapter.notifyDataSetChanged();
+                                        kugouAdapter.notifyDataSetChanged();
+                                        qqAdapter.notifyDataSetChanged();
                                         loadlist.setVisibility(View.GONE);
                                     }
                                 });
@@ -238,8 +364,8 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
 
     //判断歌曲是否存在本地列表
     public int isExist(Music music) {
-        if (app.getmList() == null || app.getmList().size() == 0) return 1;
         List<Music> list = app.getmList();
+        if (list == null || list.size() == 0) return 1;
         for (int i = 0; i < list.size(); i++) {
             Music m = list.get(i);
             if (music.getName().equals(m.getName()) && music.getSize() == m.getSize()) {
@@ -256,30 +382,24 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 clickItem(view);
                 break;
             case R.id.local:
-                musicHttp = 0;
-                switchSearch(view);
+                viewPager.setCurrentItem(0, true);
                 break;
             case R.id.kghttp:
-                musicHttp = 1;
-                switchSearch(view);
+                viewPager.setCurrentItem(1, true);
                 break;
             case R.id.qqhttp:
-                musicHttp = 2;
-                switchSearch(view);
+                viewPager.setCurrentItem(2, true);
                 break;
         }
     }
 
     //切换搜索
-    public void switchSearch(View view){
+    public void switchSearch(){
         list.clear();
-        page = 1;
-        int colorText = getResources().getColor(R.color.colorText);
-        local.setTextColor(colorText);
-        kghttp.setTextColor(colorText);
-        qqhttp.setTextColor(colorText);
-        TextView textView = (TextView) view;
-        textView.setTextColor(getResources().getColor(R.color.colorPrimary));
+        //kugou.clear();
+        //qq.clear();
+        pageKugou = 1;
+        pageQq = 1;
         searchMusic(findViewById(R.id.keyword));
     }
 
@@ -296,7 +416,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         String str = keywork.getText().toString();
         if (str.replaceAll(" ", "").length() == 0) {
             loadlist.setVisibility(View.GONE);
-            Toast.makeText(this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
             return;
         }
         searchList(str);
@@ -305,23 +425,33 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     //搜索歌曲列表
-    public void searchList(String str){
+    public void searchList(final String str){
+        isLoadlist = false;
         switch (musicHttp){
             case 0:
-                list.clear();
-                list.addAll(dao.getMusicData(str));
-                adapter.notifyDataSetChanged();
-                loadlist.setVisibility(View.GONE);
-                isLoadlist = false;
-                if(list.size() == 0){
-                    Toast.makeText(this, "没有搜索到符合条件的歌曲", Toast.LENGTH_SHORT).show();
-                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        list.clear();
+                        list.addAll(dao.getMusicData(str));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapter.notifyDataSetChanged();
+                                loadlist.setVisibility(View.GONE);
+                                if(list.size() == 0){
+                                    Toast.makeText(SearchActivity.this, "没有搜索到符合条件的歌曲", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                }).start();
                 break;
             case 1:
-                new KuGouMusic(this).search(str, page);
+                new KuGouMusic(this).search(str, pageKugou);
                 break;
             case 2:
-                new QQMusic(this).search(str, page);
+                new QQMusic(this).search(str, pageQq);
                 break;
         }
     }
@@ -335,17 +465,31 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     //获取歌曲链接
-    public void getMusicPath(Music music){
+    public void getMusicPath(final Music music){
         switch (musicHttp){
             case 0:
                 isLoadPath = false;
-                int idx = isExist(music);
-                Intent broadcast = new Intent();
-                broadcast.setAction("sBroadcast");
-                broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
-                broadcast.putExtra("idx", idx);
-                sendBroadcast(broadcast);
-                adapter.notifyDataSetChanged();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(app.getmList() == null || app.getmList().size() == 0 || app.getPlaylist() == 1){
+                            app.setmList(dao.getMusicData());
+                            app.setPlaylist(0);
+                        }
+                        int idx = isExist(music);
+                        Intent broadcast = new Intent();
+                        broadcast.setAction("sBroadcast");
+                        broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
+                        broadcast.putExtra("idx", idx);
+                        sendBroadcast(broadcast);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                }).start();
                 break;
             case 1:
                 new KuGouMusic(this).musicUrl(music);
@@ -362,7 +506,19 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         LinearLayout layout = (LinearLayout) view;
         TextView textView = layout.findViewById(R.id.musicNum);
         int musicNum = Integer.parseInt(textView.getText().toString());
-        return list.get(musicNum - 1);
+        Music music = null;
+        switch (viewPager.getCurrentItem()){
+            case 0:
+                music = list.get(musicNum - 1);
+                break;
+            case 1:
+                music = kugou.get(musicNum - 1);
+                break;
+            case 2:
+                music = qq.get(musicNum - 1);
+                break;
+        }
+        return music;
     }
 
     @Override
@@ -389,8 +545,11 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
         if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-            page = 1;
+            pageKugou = 1;
+            pageQq = 1;
             list.clear();
+            kugou.clear();
+            qq.clear();
             searchMusic(textView);
             return true;
         }

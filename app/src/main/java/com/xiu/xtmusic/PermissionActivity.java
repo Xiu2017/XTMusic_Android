@@ -7,8 +7,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.view.KeyEvent;
 
 import com.xiu.utils.CheckPermission;
 import com.xiu.utils.mApplication;
@@ -23,6 +25,11 @@ public class PermissionActivity extends Activity {
     private static final String PACKAGE_URL_SCHEME = "package:";//权限方案
     private CheckPermission checkPermission;//检测权限类的权限检测器
     private boolean isrequestCheck;//判断是否需要系统权限检测。防止和系统提示框重叠
+
+    private int count;
+    private mApplication app;
+    private final int SPLASH_DISPLAY_LENGHT = 500;
+    private Handler handler;
 
     //启动当前权限页面的公开接口
     public static void startActivityForResult(Activity activity, int requestCode, String... permission) {
@@ -43,6 +50,9 @@ public class PermissionActivity extends Activity {
         }
         checkPermission = new CheckPermission(this);
         isrequestCheck = true;//改变检测状态
+        handler = new Handler();
+        app = (mApplication) getApplicationContext();
+        app.addActivity(this);
     }
 
     //检测完之后请求用户授权
@@ -63,8 +73,18 @@ public class PermissionActivity extends Activity {
 
     //获取全部权限
     private void allPermissionGranted() {
+        count++;
         setResult(PERMISSION_GRANTED);
-        finish();
+        if(count == 1){
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent(PermissionActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }, SPLASH_DISPLAY_LENGHT);
+        }
     }
 
     //请求权限去兼容版本
@@ -143,6 +163,15 @@ public class PermissionActivity extends Activity {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.setData(Uri.parse(PACKAGE_URL_SCHEME + getPackageName()));
         startActivity(intent);
+    }
+
+    //禁用按键事件
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
 }

@@ -437,18 +437,13 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
 
     //设置专辑封面
     public void setAlbum(Bitmap bitmap) {
-        if (bitmap != null) {
-            album.setImageBitmap(ImageUtil.getimage(bitmap, 500f, 500f));
-            bitmap = ImageUtil.getimage(bitmap, 20f, 20f);
-            bitmap = StackBlur.blur(bitmap, 4, false);
-            albumbg.setImageBitmap(bitmap);
-        } else {
+        if (bitmap == null) {
             bitmap = dao.getAlbumBitmap(music.getPath(), R.mipmap.album_default);
-            album.setImageBitmap(ImageUtil.getimage(bitmap, 500f, 500f));
-            bitmap = ImageUtil.getimage(bitmap, 20f, 20f);
-            bitmap = StackBlur.blur(bitmap, 4, false);
-            albumbg.setImageBitmap(bitmap);
         }
+        album.setImageBitmap(ImageUtil.getimage(bitmap, 500f, 500f));
+        bitmap = ImageUtil.getimage(bitmap, 100f, 100f);
+        bitmap = StackBlur.blur(bitmap, 20, false);
+        albumbg.setImageBitmap(bitmap);
     }
 
     //设置默认专辑界面
@@ -542,6 +537,8 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                 case 1:
                     dot1.setBackgroundResource(R.drawable.circle_dot);
                     dot2.setBackgroundResource(R.drawable.circle_dot_sel);
+                    int padding = lrcList.getHeight() / 2;
+                    lrcList.setPadding(0, padding - 208, 0, padding);
                     break;
             }
         }

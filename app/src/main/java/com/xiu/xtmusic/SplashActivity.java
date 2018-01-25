@@ -2,20 +2,11 @@ package com.xiu.xtmusic;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.database.ContentObserver;
-import android.net.Uri;
-import android.os.Handler;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
-import android.widget.Toast;
 
-import com.xiu.dao.MusicDao;
-import com.xiu.entity.Msg;
-import com.xiu.entity.Music;
 import com.xiu.utils.CheckPermission;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
@@ -26,8 +17,7 @@ import java.io.IOException;
 public class SplashActivity extends Activity {
 
     private mApplication app;
-    private MusicDao dao;
-    private final int SPLASH_DISPLAY_LENGHT = 1000;
+    private final int SPLASH_DISPLAY_LENGHT = 500;
     private Handler handler;
 
     //==========权限相关==========//
@@ -46,27 +36,29 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        dao = new MusicDao(this);
+        //dao = new MusicDao(this);
         app = (mApplication) getApplicationContext();
+        app.addActivity(this);
         handler = new Handler();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //缺少权限时，进入权限设置页面
+        // 延迟SPLASH_DISPLAY_LENGHT时间然后跳转到MainActivity
+        //createNoMedia();
+        //app.setmList(dao.getMusicData());
         if (checkPermission == null) {
-            checkPermission = new CheckPermission(this);
+            checkPermission = new CheckPermission(SplashActivity.this);
         }
         if (checkPermission.permissionSet(PERMISSION)) {
             startPermissionActivity();
+            finish();
         } else {
-            // 延迟SPLASH_DISPLAY_LENGHT时间然后跳转到MainActivity
+            //缺少权限时，进入权限设置页面
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    createNoMedia();
-                    app.setmList(dao.getMusicData());
                     Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
@@ -92,6 +84,7 @@ public class SplashActivity extends Activity {
         }
     }
 
+    //禁用按键事件
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {

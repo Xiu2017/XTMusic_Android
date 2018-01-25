@@ -7,7 +7,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -26,12 +26,20 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    //ORMLite
     compile 'com.j256.ormlite:ormlite-core:5.0'
     compile 'com.j256.ormlite:ormlite-android:5.0'
+    //图片高斯模糊
     compile 'net.qiujuer.genius:blur:2.0.0-beta4'
+    //圆形ImageView
     compile 'de.hdodenhof:circleimageview:2.2.0'
+    //GSON
     compile 'com.google.code.gson:gson:2.8.2'
-    //compile 'com.carson_ho:SearchLayout:1.0.1'
+    //OKHTTP
     implementation files('libs/okhttp-3.9.1.jar')
     implementation files('libs/okio-1.13.0.jar')
+    //圆形进度条
+    compile 'com.czp.arcProgressBar:ArcProgressBar:1.0.1'
+    //音乐缓存
+    compile 'com.danikula:videocache:2.7.0'
 }
