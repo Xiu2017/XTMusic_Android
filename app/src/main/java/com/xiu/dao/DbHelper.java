@@ -4,18 +4,16 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
-import com.j256.ormlite.dao.Dao;
+
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import com.xiu.entity.Music;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+
 
 /**
- * Created by xiu on 2017/12/15.
+ *
  */
 
 public class DbHelper extends OrmLiteSqliteOpenHelper {
@@ -23,13 +21,13 @@ public class DbHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "xtmusic";
     private static final int VERSION = 3;
 
-    public DbHelper(Context context) {
+    private DbHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
     }
 
-    public DbHelper(Context context, String databaseName, SQLiteDatabase.CursorFactory factory, int databaseVersion) {
+/*    public DbHelper(Context context, String databaseName, SQLiteDatabase.CursorFactory factory, int databaseVersion) {
         super(context, databaseName, factory, databaseVersion);
-    }
+    }*/
 
     @Override
     public void onCreate(SQLiteDatabase database, ConnectionSource connectionSource) {
@@ -53,7 +51,7 @@ public class DbHelper extends OrmLiteSqliteOpenHelper {
     //===================提供单例模式DbHelper对象提供服务=========================//
     private static DbHelper dbHelper;
 
-    public static synchronized DbHelper getInstance(Context context) {
+    static synchronized DbHelper getInstance(Context context) {
         if (dbHelper == null) {
             dbHelper = new DbHelper(context);
         }
@@ -61,7 +59,7 @@ public class DbHelper extends OrmLiteSqliteOpenHelper {
     }
 
     //==================构建一个Dao栈，统一管理Dao=======================//
-    private Map<String, Dao> daos = new HashMap<String, Dao>();
+/*    private Map<String, Dao> daos = new HashMap<String, Dao>();
 
     public Dao getDaos(Class cls) throws SQLException {
         String className = cls.getName();//获取类名
@@ -80,5 +78,5 @@ public class DbHelper extends OrmLiteSqliteOpenHelper {
             Dao dao = (Dao) it.next();
             dao = null;
         }
-    }
+    }*/
 }

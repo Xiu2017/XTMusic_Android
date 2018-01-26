@@ -3,21 +3,13 @@ package com.xiu.adapter;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.AnimationUtils;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.danikula.videocache.CacheListener;
-import com.danikula.videocache.HttpProxyCacheServer;
 import com.xiu.entity.Music;
-import com.xiu.utils.FileUtils;
-import com.xiu.utils.StorageUtil;
-import com.xiu.utils.TimeFormatUtil;
 import com.xiu.utils.mApplication;
 import com.xiu.xtmusic.MainActivity;
 import com.xiu.xtmusic.R;
@@ -27,37 +19,21 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 /**
- * Created by xiu on 2017/12/31.
+ * 音乐列表ListView适配器
  */
 
-public class MusicListAdapter extends BaseAdapter implements CacheListener {
+public class MusicListAdapter extends BaseAdapter {
 
-    private List<Music> list;
-    private Context context;
-    private MainActivity activity;
-    private mApplication app;
-    private OnCacheListener onCacheListener;  //音乐缓存
-    //private String innerSD;
-    //private String extSD;
+    private List<Music> list;  //保存音乐数据的list
+    private Context context;  //上下文
+    private MainActivity activity;  //MainActivity实例
+    private mApplication app;  //应用上下文
 
     public MusicListAdapter(List<Music> list, MainActivity activity) {
         this.list = list;
         this.context = activity;
         this.activity = activity;
         this.app = (mApplication) activity.getApplicationContext();
-        //innerSD = new StorageUtil(context).innerSDPath();
-        //extSD = new StorageUtil(context).extSDPath();
-    }
-
-    public interface OnCacheListener {
-        void getCacheProgress(int progress);
-    }
-
-    @Override
-    public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
-        if (onCacheListener != null) {
-            onCacheListener.getCacheProgress(percentsAvailable);
-        }
     }
 
     @Override
@@ -91,49 +67,50 @@ public class MusicListAdapter extends BaseAdapter implements CacheListener {
             if (view == null) {
                 musicItem = new MusicItem();
                 view = View.inflate(context, R.layout.layout_list_item, null);
+
                 musicItem.musicNum = view.findViewById(R.id.musicNum);
                 musicItem.playing = view.findViewById(R.id.playing);
                 musicItem.musicTitle = view.findViewById(R.id.musicTitle);
                 musicItem.musicArtist = view.findViewById(R.id.musicArtist);
                 musicItem.musicPath = view.findViewById(R.id.musicPath);
                 musicItem.kugou = view.findViewById(R.id.kugou);
+
                 view.setTag(musicItem);
             } else {
                 musicItem = (MusicItem) view.getTag();
             }
 
             //信息绑定
-            final Music music = list.get(i);
-            final String title = music.getTitle();
-            musicItem.musicNum.setText((i + 1) + "");
+            Music music = list.get(i);
+            String title = music.getTitle();
+
+            musicItem.musicNum.setText(String.valueOf(i + 1));
             musicItem.musicTitle.setText(title);
             musicItem.musicArtist.setText(music.getArtist());
+
             musicItem.musicPath.setPadding(0, 0, 0, 0);
+
             musicItem.list_item = view.findViewById(R.id.list_item);
+
             if (music.getPath().contains("http://") || new File(music.getPath()).exists()) {
                 if (music.getPath().contains("http://")) {
-                    if(music.getPath().contains("qqmusic")){
+                    if (music.getPath().contains("qqmusic")) {
                         musicItem.kugou.setImageResource(R.mipmap.qqmusic);
-                    }else {
+                    } else {
                         musicItem.kugou.setImageResource(R.mipmap.kugou);
                     }
                     //显示大小
-                    DecimalFormat df = new DecimalFormat("#0.00");
+                    DecimalFormat df = new DecimalFormat("#0.00M");
                     float temp = music.getSize() / 1024.0f / 1024.0f;
                     //检查缓存
-                    if(app.getProxy(context).isCached(music.getPath())){
+                    if (app.getProxy(context).isCached(music.getPath())) {
                         musicItem.musicPath.setText("已缓存");
-                    }else {
-                        musicItem.musicPath.setText(df.format(temp) + "M");
+                    } else {
+                        musicItem.musicPath.setText(df.format(temp));
                     }
                 } else {
                     musicItem.kugou.setImageResource(0);
                     musicItem.musicPath.setText("");
-/*                    if(music.getPath().contains(innerSD+"")){
-                        musicItem.musicPath.setText(music.getPath().replace(innerSD+"","").replace("/"+music.getName(), ""));
-                    }else if (music.getPath().contains(extSD+"")){
-                        musicItem.musicPath.setText(music.getPath().replace(extSD+"","").replace("/"+music.getName(), ""));
-                    }*/
                 }
                 musicItem.list_item.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -151,11 +128,12 @@ public class MusicListAdapter extends BaseAdapter implements CacheListener {
                 });
             }
 
-            //解决Item回收导致图标状态显示不正确的问题
+            //让正在播放的歌曲显示播放图标
             if (app.getmList() != null && app.getmList().size() != 0 && app.getIdx() != 0 && app.getIdx() - 1 == i && music.getPath().equals(app.getmList().get(app.getIdx() - 1).getPath())) {
                 musicItem.musicNum.setVisibility(View.GONE);
                 musicItem.playing.setVisibility(View.VISIBLE);
-                if(music.getPath().contains("http://") || new File(music.getPath()).exists()){
+
+                if (music.getPath().contains("http://") || new File(music.getPath()).exists()) {
                     musicItem.list_item.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -163,6 +141,7 @@ public class MusicListAdapter extends BaseAdapter implements CacheListener {
                         }
                     });
                 }
+
             } else {
                 musicItem.musicNum.setVisibility(View.VISIBLE);
                 musicItem.playing.setVisibility(View.GONE);
@@ -173,7 +152,7 @@ public class MusicListAdapter extends BaseAdapter implements CacheListener {
         return null;
     }
 
-    final class MusicItem {
+    class MusicItem {
         LinearLayout list_item;
         ImageView playing, kugou;
         TextView musicNum, musicTitle, musicArtist, musicPath;

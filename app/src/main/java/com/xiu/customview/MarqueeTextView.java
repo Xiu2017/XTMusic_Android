@@ -5,10 +5,11 @@ import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
 
 /**
- * Created by xiu on 2018/1/19.
+ * 横向滚动的自定义TextView
  */
 
 public class MarqueeTextView extends AppCompatTextView {
+
     public MarqueeTextView(Context context) {
         super(context);
     }
@@ -21,6 +22,7 @@ public class MarqueeTextView extends AppCompatTextView {
         super(context, attrs, defStyleAttr);
     }
 
+    //让TextView聚焦始终返回true
     @Override
     public boolean isFocused() {
         return true;

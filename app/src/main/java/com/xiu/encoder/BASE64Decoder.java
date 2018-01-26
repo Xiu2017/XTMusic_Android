@@ -26,7 +26,6 @@ package com.xiu.encoder;
 
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
-import java.io.PrintStream;
 
 /**
  * 32    * This class implements a BASE64 Character decoder as specified in RFC1521.

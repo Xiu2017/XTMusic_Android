@@ -2,7 +2,8 @@ package com.xiu.api;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
@@ -25,12 +26,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Created by xiu on 2018/1/11.
+ * 酷狗音乐接口
  */
 
 public class KuGouMusic {
 
-    private static Context context;
+    private Context context;
     private MusicDao dao;
 
     public KuGouMusic(Context context) {
@@ -54,7 +55,7 @@ public class KuGouMusic {
         //异步执行请求
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@Nullable Call call, @NonNull IOException e) {
                 if (page == 1) {
                     musicList.setList(list);
                 }
@@ -67,10 +68,13 @@ public class KuGouMusic {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@Nullable Call call, @NonNull Response response) throws IOException {
                 //通过response得到服务器响应内容
-                String str = response.body().string();
-                str = str.substring(1, str.length() - 1);
+                String str = "";
+                if(response.body() != null){
+                    str = response.body().string();
+                    str = str.substring(1, str.length() - 1);
+                }
                 try {
                     JSONArray json = new JSONObject(str)
                             .getJSONObject("data")
@@ -134,15 +138,16 @@ public class KuGouMusic {
         //异步执行请求
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@Nullable Call call, @NonNull IOException e) {
                 Intent kBroadcast = new Intent();
                 kBroadcast.setAction("sBroadcast");
                 kBroadcast.putExtra("what", Msg.GET_MUSIC_ERROR);
                 context.sendBroadcast(kBroadcast);
+                e.printStackTrace();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@Nullable Call call, @NonNull Response response) throws IOException {
                 //通过response得到服务器响应内容
                 String str = response.body().string();
                 //Log.d("str", str);

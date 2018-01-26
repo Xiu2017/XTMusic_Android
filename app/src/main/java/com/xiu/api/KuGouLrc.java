@@ -1,8 +1,6 @@
 package com.xiu.api;
 
 import android.net.Uri;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.xiu.utils.Base64;
 import com.xiu.utils.CallBack;
@@ -16,7 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Created by xiu on 2018/1/8.
+ * 酷狗歌词接口
  */
 
 public class KuGouLrc {
@@ -68,7 +66,7 @@ public class KuGouLrc {
     }
 
     //字符串编码URL
-    public static String encodeUrl(String url) {
+    private static String encodeUrl(String url) {
         return Uri.encode(url, "-![.:/,%?&=]");
     }
 }

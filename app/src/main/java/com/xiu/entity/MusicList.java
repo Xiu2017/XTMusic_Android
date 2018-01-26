@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.util.List;
 
 /**
- * Created by xiu on 2018/1/11.
+ * 用于传递序列化List
  */
 
 public class MusicList implements Parcelable {

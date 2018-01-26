@@ -9,6 +9,7 @@
         android:id="@+id/lyricList"
         android:divider="@null"
         android:scrollbars="none"
+        android:layout_marginBottom="70dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

@@ -6,7 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 
+import com.chibde.visualizer.CircleBarVisualizer;
+import com.chibde.visualizer.LineBarVisualizer;
+import com.chibde.visualizer.LineVisualizer;
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.xiu.customview.CustomVisualizer;
 import com.xiu.entity.Music;
 import com.xiu.service.MusicService;
 
@@ -44,6 +48,37 @@ public class mApplication extends Application {
                 .build();
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // 程序启动的时候开始服务
+        sIntent = new Intent(this, MusicService.class);
+        startService(sIntent);
+    }
+
+    //自定义释放资源
+    public void onDestroy() {
+        mService.onDestroy();  //释放服务资源
+        stopService(sIntent);  //停止服务
+    }
+
+    //自定义Activity栈
+    private List<Activity> activities = new ArrayList<Activity>();
+
+    public void addActivity(Activity activity) {
+        activities.add(activity);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        for (Activity activity : activities) {
+            activity.finish();
+        }
+        onDestroy();
+        System.exit(0);
+    }
+
     public List<Music> getmList() {
         return mList;
     }
@@ -74,37 +109,6 @@ public class mApplication extends Application {
 
     public void setMp(MediaPlayer mp) {
         this.mp = mp;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        // 程序启动的时候开始服务
-        sIntent = new Intent(this, MusicService.class);
-        startService(sIntent);
-    }
-
-    //自定义释放资源
-    public void onDestroy() {
-        mService.onDestroy();  //释放服务资源
-        stopService(sIntent);  //停止服务
-    }
-
-    //自定义Activity栈
-    private List<Activity> activities = new ArrayList<Activity>();
-
-    public void addActivity(Activity activity) {
-        activities.add(activity);
-    }
-
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
-        for (Activity activity : activities) {
-            activity.finish();
-        }
-        onDestroy();
-        System.exit(0);
     }
 
     public boolean isMobileConnected() {

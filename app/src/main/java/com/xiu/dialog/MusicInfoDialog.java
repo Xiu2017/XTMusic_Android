@@ -17,17 +17,15 @@ import com.xiu.xtmusic.R;
 import java.text.DecimalFormat;
 
 /**
- * Created by xiu on 2017/12/31.
+ * 显示音乐信息的对话框
  */
 
 public class MusicInfoDialog extends Dialog {
 
-    private Context context;
     private Music music;
 
     public MusicInfoDialog(@NonNull Context context, Music music) {
         super(context, R.style.CustomDialog);
-        this.context = context;
         this.music = music;
     }
 
@@ -40,9 +38,8 @@ public class MusicInfoDialog extends Dialog {
     @Override
     public void show() {
         super.show();
-        /**
-         * 设置宽度全屏，要设置在show的后面
-         */
+
+        //设置宽度全屏，要设置在show的后面
         View view = getWindow().getDecorView();
 
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
@@ -73,10 +70,10 @@ public class MusicInfoDialog extends Dialog {
         fileName.setText(name.substring(0, name.lastIndexOf(".")));
         musicTime.setText(TimeFormatUtil.secToTime(music.getTime() / 1000));
 
-        DecimalFormat df = new DecimalFormat("#0.00");
+        DecimalFormat df = new DecimalFormat("#0.00M");
         float temp = music.getSize() / 1024.0f / 1024.0f;
 
-        fileSize.setText(df.format(temp) + "M");
+        fileSize.setText(df.format(temp));
 
         fileType.setText(name.substring(name.lastIndexOf(".") + 1));
         filePath.setText(music.getPath().replace("/" + name, ""));
@@ -87,7 +84,7 @@ public class MusicInfoDialog extends Dialog {
     private float moveY = 0;
 
     @Override
-    public boolean onTouchEvent(MotionEvent ev) {
+    public boolean onTouchEvent(@NonNull MotionEvent ev) {
         View view = getWindow().getDecorView();
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:

@@ -7,19 +7,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.xiu.entity.Music;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by xiu on 2017/12/15.
@@ -28,12 +24,11 @@ import java.util.Map;
 public class MusicDao {
 
     private Context context;
-    private DbHelper dbHelper;
     private Dao dao;
 
     public MusicDao(Context context) {
         this.context = context;
-        dbHelper = DbHelper.getInstance(context);
+        DbHelper dbHelper = DbHelper.getInstance(context);
         try {
             dao = dbHelper.getDao(Music.class);
         } catch (SQLException e) {

@@ -24,7 +24,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -33,7 +32,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -51,14 +49,12 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
-import com.danikula.videocache.CacheListener;
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.sdsmdg.tastytoast.TastyToast;
 import com.xiu.adapter.MainPagerAdapter;
 import com.xiu.adapter.MusicListAdapter;
 import com.xiu.dao.MusicDao;
@@ -78,13 +74,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnClickListener, NavigationView.OnNavigationItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements OnClickListener, NavigationView.OnNavigationItemSelectedListener {
 
     //全局变量
     private boolean isTimer;
     private boolean update;
     private MusicDao dao;
-    private MenuItem timerItem;
+    private MenuItem timerItem, VisualizerItem;
     private Dialog dialog;
     private ContentResolver contentResolver;
     private MyObserver observer;
@@ -117,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         initList();  //初始化列表
         initRegister();  //注册内容观察者,当媒体数据库发生变化时,更新音乐列表
         initAnim();  //初始化专辑旋转动画
+        getVisualizer();  //初始化可视化状态
     }
 
     //初始化viewPager
@@ -212,6 +209,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        timerItem = navigationView.getMenu().getItem(2);
+        VisualizerItem = navigationView.getMenu().getItem(0);
     }
 
     //初始化沉浸式状态栏
@@ -339,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 boolean checked = timerCk.isChecked();
 
                 timerExit(time, checked);
-                Toast.makeText(MainActivity.this, (mHour * 60 + mMinute) + "分钟后将退出应用", Toast.LENGTH_LONG).show();
+                TastyToast.makeText(MainActivity.this, (mHour * 60 + mMinute) + "分钟后将退出应用", Msg.LENGTH_SHORT, TastyToast.DEFAULT).show();
                 dialog.cancel();
             }
         });
@@ -389,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 query.setFilterById(mTaskId);
                 Cursor c = manager.query(query);
                 if (c.moveToFirst()) {
-                    Toast.makeText(MainActivity.this, "音乐下载完成，保存在/XTMusic/Music目录下", Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(MainActivity.this, "音乐下载完成，保存在/XTMusic/Music目录下", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
                 }
             }
         }
@@ -476,6 +475,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
     //下载音乐
     long mTaskId;
+
     public void downloadMusic(Music music) {
         //下载链接校验，防止用户操作过快
         if (!music.getPath().contains("http://")) return;
@@ -483,17 +483,17 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         //读取缓存
         String path = music.getPath();
         HttpProxyCacheServer proxy = app.getProxy(this);
-        if(proxy.isCached(path)){
+        if (proxy.isCached(path)) {
             path = proxy.getProxyUrl(music.getPath()).replace("file://", "");
-            String toPath = new StorageUtil(this).innerSDPath()+"/XTMusic/Music/"+music.getName();
+            String toPath = new StorageUtil(this).innerSDPath() + "/XTMusic/Music/" + music.getName();
             FileUtils.copyFile(path, toPath);
             //扫描到媒体库
             MediaScannerConnection.scanFile(this, new String[]{toPath}, null, null);
-            Toast.makeText(this, "音乐下载完成，保存在/XTMusic/Music目录下", Toast.LENGTH_SHORT).show();
+            TastyToast.makeText(this, "音乐下载完成，保存在/XTMusic/Music目录下", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
             return;
         }
 
-        Toast.makeText(this, "开始下载\"" + music.getArtist() + " - " + music.getTitle() + "\"，请在通知栏查看下载进度", Toast.LENGTH_SHORT).show();
+        TastyToast.makeText(this, "开始下载\"" + music.getArtist() + " - " + music.getTitle() + "\"，请在通知栏查看下载进度", Msg.LENGTH_SHORT, TastyToast.DEFAULT).show();
         //创建下载任务,downloadUrl就是下载链接
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(music.getPath()));
         //指定下载路径和下载文件名
@@ -542,9 +542,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                     file = new File(music.getPath());
                     if (file.exists()) {
                         if (music.getPath().contains(extSD + "")) {
-                            Toast.makeText(MainActivity.this, "暂不支持删除外置SD卡文件", Toast.LENGTH_SHORT).show();
-                        } else if(file != null && file.delete()) {
-                            Toast.makeText(MainActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
+                            TastyToast.makeText(MainActivity.this, "暂不支持删除外置SD卡文件", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
+                        } else if (file != null && file.delete()) {
+                            TastyToast.makeText(MainActivity.this, "删除成功", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
                         }
                     }
                 }
@@ -566,7 +566,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
                 int idx = app.getIdx() - 1;
                 int delIdx = -1;
-                switch (viewPager.getCurrentItem()){
+                switch (viewPager.getCurrentItem()) {
                     case 0:
                         delIdx = list.indexOf(music);
                         list.clear();
@@ -600,7 +600,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         LinearLayout layout1 = (LinearLayout) view.getParent();
         TextView textView = layout1.findViewById(R.id.musicNum);
         int musicNum = Integer.parseInt(textView.getText().toString());
-        if(viewPager.getCurrentItem() == 0){
+        if (viewPager.getCurrentItem() == 0) {
             return list.get(musicNum - 1);
         }
         return historyData.get(musicNum - 1);
@@ -618,7 +618,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         } else {
             File file = new File(music.getPath());
             if (!file.exists()) {
-                Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();
+                TastyToast.makeText(this, "文件不存在", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
                 return;
             }
             intent.setType("audio/*");
@@ -979,9 +979,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 SharedPreferences.Editor editor = sharedPreferences.edit();//获取编辑器
                 editor.putString("treeUri", treeUri.toString());
                 editor.commit();
-                Toast.makeText(MainActivity.this, "获取外置SD卡读写权限成功", Toast.LENGTH_SHORT).show();
+                TastyToast.makeText(this, "获取外置SD卡读写权限成功", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
             } else {
-                Toast.makeText(MainActivity.this, "获取权限失败", Toast.LENGTH_SHORT).show();
+                TastyToast.makeText(this, "获取权限失败", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
             }
         }
     }
@@ -993,10 +993,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         switch (item.getItemId()) {
             case R.id.nav_refresh:
                 updateMediaRepertory();
-                Toast.makeText(this, "正在后台更新", Toast.LENGTH_SHORT).show();
+                TastyToast.makeText(this, "正在后台更新", Msg.LENGTH_SHORT, TastyToast.DEFAULT).show();
                 break;
             case R.id.nav_timer_exit:
-                timerItem = item;
                 if (isTimer) {
                     timerClear();
                 } else {
@@ -1004,7 +1003,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 }
                 break;
             case R.id.nav_playmode:
-                switch (app.getPlaymode()){
+                switch (app.getPlaymode()) {
                     case 0:
                         app.setPlaymode(1);
                         item.setTitle("单曲循环");
@@ -1022,6 +1021,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                         break;
                 }
                 break;
+            case R.id.nav_visualizer:
+                SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+                int visualizer = pref.getInt("visualizer", 0);
+                SharedPreferences.Editor editor = pref.edit();
+                if (visualizer == 0) {
+                    editor.putInt("visualizer", 1);
+                    item.setTitle("开启可视化");
+                } else {
+                    editor.putInt("visualizer", 0);
+                    item.setTitle("关闭可视化");
+                }
+                editor.commit();
+                break;
             case R.id.nav_about:
                 Intent intent = new Intent(MainActivity.this, AboutActivity.class);
                 startActivity(intent);
@@ -1033,10 +1045,21 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 break;
         }
         //收起侧边栏
-        if(item.getItemId() != R.id.nav_playmode){
+        if (item.getItemId() != R.id.nav_playmode && item.getItemId() != R.id.nav_visualizer) {
             drawer.closeDrawer(GravityCompat.START);
         }
         return true;
+    }
+
+    //读取可视化状态
+    public void getVisualizer() {
+        SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+        int visualizer = pref.getInt("visualizer", 0);
+        if (visualizer == 0) {
+            VisualizerItem.setTitle("关闭可视化");
+        } else {
+            VisualizerItem.setTitle("打开可视化");
+        }
     }
 
     //内容观察者,观察媒体数据库的变化,实时更新音乐列表

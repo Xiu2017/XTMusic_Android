@@ -5,12 +5,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -21,13 +23,19 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.chibde.visualizer.CircleBarVisualizer;
+import com.chibde.visualizer.LineBarVisualizer;
+import com.chibde.visualizer.LineVisualizer;
 import com.xiu.adapter.LyricListAdapter;
+import com.xiu.customview.CustomVisualizer;
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
@@ -65,6 +73,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
     private ImageView album, albumbg, playBtn;
     private ViewPager viewPager;
     private List<View> pages;
+    private CustomVisualizer customVisualizer;  //音乐可视化
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +84,34 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         initViewPager();  //初始化viewPager
         initView();  //初始化视图和元素
         initAnim();  //初始化专辑旋转动画
+    }
+
+    //初始化可视化
+    public void initVisualizer(){
+        SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+        int visualizer = pref.getInt("visualizer", 0);
+        if(app.getMp() != null && visualizer == 0){
+            if(customVisualizer != null){
+                customVisualizer.release();  //释放可视化资源
+            }
+            customVisualizer = findViewById(R.id.visualizer);
+            //设置自定义颜色
+            customVisualizer.setColor(getResources().getColor(R.color.colorLrc));
+            //设置可视化的采样率，10 - 256
+            customVisualizer.setDensity(128);
+            //绑定MediaPlayer
+            customVisualizer.setPlayer(app.getMp());
+        }else {
+            LinearLayout layout = findViewById(R.id.albumParent);
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
+            params.bottomMargin = 0;
+            layout.setLayoutParams(params);
+            View view = pages.get(1);
+            ListView listView = view.findViewById(R.id.lyricList);
+            RelativeLayout.LayoutParams listParames = (RelativeLayout.LayoutParams) listView.getLayoutParams();
+            listParames.bottomMargin = 0;
+            listView.setLayoutParams(listParames);
+        }
     }
 
     //初始化沉浸式状态栏
@@ -306,7 +343,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
 
                 @Override
                 public void failed(String str) {
-                    //Toast.makeText(AlbumActivity.this, str, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(AlbumActivity.this, str, Msg.LENGTH_SHORT).show();
                     //根据标题搜不出歌词，尝试根据文件名再搜一次
                     searchLrc(builder, lrcPath);
                 }
@@ -533,12 +570,20 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                 case 0:
                     dot1.setBackgroundResource(R.drawable.circle_dot_sel);
                     dot2.setBackgroundResource(R.drawable.circle_dot);
+                    if(app.getMp() != null && app.getMp().isPlaying()){
+                        albumRotate(START);
+                    }
+                    //initVisualizer();
                     break;
                 case 1:
                     dot1.setBackgroundResource(R.drawable.circle_dot);
                     dot2.setBackgroundResource(R.drawable.circle_dot_sel);
                     int padding = lrcList.getHeight() / 2;
                     lrcList.setPadding(0, padding - 208, 0, padding);
+                    albumRotate(STOP);
+/*                    if(customVisualizer != null){
+                        customVisualizer.release();
+                    }*/
                     break;
             }
         }
@@ -559,7 +604,9 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         filter.addAction("sBroadcast");
         registerReceiver(aBroadcast, filter);
 
-        refresh();
+        refresh();  //刷新界面
+
+        initVisualizer();  //初始化可视化
     }
 
     //viewPager数据适配器
@@ -595,5 +642,8 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
     protected void onPause() {
         super.onPause();
         unregisterReceiver(aBroadcast);
+        if(customVisualizer != null){
+            customVisualizer.release();  //释放可视化资源
+        }
     }
 }

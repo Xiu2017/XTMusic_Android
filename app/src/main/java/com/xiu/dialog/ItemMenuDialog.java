@@ -14,18 +14,16 @@ import com.xiu.entity.Music;
 import com.xiu.xtmusic.R;
 
 /**
- * Created by xiu on 2017/12/31.
+ * 列表菜单对话框
  */
 
 public class ItemMenuDialog extends Dialog {
 
-    private Context context;
-    Music music;
-    String num = "";
+    private Music music;
+    private String num = "";
 
     public ItemMenuDialog(@NonNull Context context, Music music, String num) {
         super(context, R.style.CustomDialog);
-        this.context = context;
         this.music = music;
         this.num = num;
     }
@@ -43,9 +41,7 @@ public class ItemMenuDialog extends Dialog {
     @Override
     public void show() {
         super.show();
-        /**
-         * 设置宽度全屏，要设置在show的后面
-         */
+        //设置宽度全屏，要设置在show的后面
         View view = getWindow().getDecorView();
 
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
@@ -58,7 +54,7 @@ public class ItemMenuDialog extends Dialog {
 
         //绑定数据
         TextView title = view.findViewById(R.id.title);
-        title.setText("歌曲：" + music.getTitle());
+        title.setText(music.getTitle());
         TextView id = view.findViewById(R.id.musicNum);
         id.setText(num);
     }
@@ -68,7 +64,7 @@ public class ItemMenuDialog extends Dialog {
     private float moveY = 0;
 
     @Override
-    public boolean onTouchEvent(MotionEvent ev) {
+    public boolean onTouchEvent(@NonNull MotionEvent ev) {
         View view = getWindow().getDecorView();
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:

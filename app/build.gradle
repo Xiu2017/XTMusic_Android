@@ -42,4 +42,8 @@ dependencies {
     compile 'com.czp.arcProgressBar:ArcProgressBar:1.0.1'
     //音乐缓存
     compile 'com.danikula:videocache:2.7.0'
+    //音乐可视化
+    compile 'com.chibde:audiovisualizer:2.0.0'
+    //个性化Toast提示
+    compile 'com.sdsmdg.tastytoast:tastytoast:0.1.1'
 }

@@ -1,39 +1,34 @@
 package com.xiu.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.danikula.videocache.CacheListener;
-import com.xiu.dao.MusicDao;
 import com.xiu.entity.Music;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
-import com.xiu.xtmusic.MainActivity;
 import com.xiu.xtmusic.R;
 import com.xiu.xtmusic.SearchActivity;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
- * Created by xiu on 2017/12/31.
+ * 搜索列表ListView的适配器
  */
 
-public class SearchListAdapter extends BaseAdapter{
+public class SearchListAdapter extends BaseAdapter {
 
-    private List<Music> list;
-    private Context context;
-    private SearchActivity activity;
-    private mApplication app;
+    private List<Music> list;  //保存音乐数据的list
+    private Context context;  //上下文
+    private SearchActivity activity;  //SearchActivity的实例
+    private mApplication app;  //应用上下文
+    //内置和外置SD路径，用于简化音乐文件显示的路径
     private String innerSD;
     private String extSD;
 
@@ -77,6 +72,7 @@ public class SearchListAdapter extends BaseAdapter{
             if (view == null) {
                 musicItem = new MusicItem();
                 view = View.inflate(context, R.layout.layout_list_item, null);
+
                 musicItem.list_item = view.findViewById(R.id.list_item);
                 musicItem.item_menu = view.findViewById(R.id.item_menu);
                 musicItem.musicNum = view.findViewById(R.id.musicNum);
@@ -85,6 +81,7 @@ public class SearchListAdapter extends BaseAdapter{
                 musicItem.musicArtist = view.findViewById(R.id.musicArtist);
                 musicItem.musicPath = view.findViewById(R.id.musicPath);
                 musicItem.kugou = view.findViewById(R.id.kugou);
+
                 view.setTag(musicItem);
             } else {
                 musicItem = (MusicItem) view.getTag();
@@ -93,17 +90,18 @@ public class SearchListAdapter extends BaseAdapter{
             musicItem.item_menu.setVisibility(View.GONE);
 
             //信息绑定
-            final Music music = list.get(i);
-            final String title = music.getTitle();
-            musicItem.musicNum.setText((i + 1) + "");
+            Music music = list.get(i);
+            String title = music.getTitle();
+
+            musicItem.musicNum.setText(String.valueOf(i + 1));
             musicItem.musicTitle.setText(title);
             musicItem.musicArtist.setText(music.getArtist());
 
             //显示播放图标
             if (app.getmList() != null && app.getmList().size() != 0 && app.getIdx() != 0 && app.getmList().size() >= app.getIdx()) {
                 Music m = app.getmList().get(app.getIdx() - 1);
-                if (music != null && music.getName() != null && m != null && m.getName() != null) {
-                    if (m.getTitle().equals(music.getTitle() + "") && music.getSize() == m.getSize()) {
+                if (music.getName() != null && m != null && m.getName() != null) {
+                    if (m.getTitle().equals(music.getTitle()) && music.getSize() == m.getSize()) {
                         musicItem.musicNum.setVisibility(View.GONE);
                         musicItem.playing.setVisibility(View.VISIBLE);
                         musicItem.list_item.setOnClickListener(new View.OnClickListener() {
@@ -135,20 +133,20 @@ public class SearchListAdapter extends BaseAdapter{
                     musicItem.musicPath.setText("");
                 }
             } else {
-                if(music.getPath().length() == 14 || music.getPath().contains("qqmusic")){
+                if (music.getPath().length() == 14 || music.getPath().contains("qqmusic")) {
                     musicItem.kugou.setImageResource(R.mipmap.qqmusic);
-                }else {
+                } else {
                     musicItem.kugou.setImageResource(R.mipmap.kugou);
                 }
                 //显示大小
-                DecimalFormat df = new DecimalFormat("#0.00");
+                DecimalFormat df = new DecimalFormat("#0.00M");
                 float temp = music.getSize() / 1024.0f / 1024.0f;
                 //检查缓存
 /*                if(app.getProxy(context).isCached(music.getPath())){
                     musicItem.musicPath.setText("已缓存");
                 }else {
                 }*/
-                musicItem.musicPath.setText(df.format(temp) + "M");
+                musicItem.musicPath.setText(df.format(temp));
             }
 
             return view;
@@ -163,18 +161,8 @@ public class SearchListAdapter extends BaseAdapter{
     }
 
     //判断歌曲是否存在本地列表
-    public boolean isExist(Music music) {
-/*        if (localList == null || localList.size() == 0) return false;
-        for (int i = 0; i < localList.size(); i++) {
-            Music m = localList.get(i);
-            if (!m.getPath().contains("http://") && music.getName().equals(m.getName()) && music.getSize() == m.getSize()) {
-                return true;
-            }
-        }*/
-        if(!music.getPath().contains("http://") && new File(music.getPath()).exists()){
-            return true;
-        }
-        return false;
+    private boolean isExist(Music music) {
+        return !music.getPath().contains("http://") && new File(music.getPath()).exists();
     }
 
 }

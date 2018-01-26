@@ -25,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sdsmdg.tastytoast.TastyToast;
 import com.xiu.adapter.MainPagerAdapter;
 import com.xiu.adapter.SearchListAdapter;
 import com.xiu.api.QQMusic;
@@ -227,7 +228,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                     isLoadlist = false;
                     final MusicList musicList = intent.getParcelableExtra("list");
                     if (musicList == null || musicList.getList() == null || musicList.getList().size() == 0) {
-                        Toast.makeText(SearchActivity.this, "没有更多的数据了", Toast.LENGTH_SHORT).show();
+                        TastyToast.makeText(SearchActivity.this, "没有更多的数据了", Msg.LENGTH_SHORT, TastyToast.WARNING).show();
                         loadlist.setVisibility(View.GONE);
                         return;
                     }
@@ -269,7 +270,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 case Msg.GET_MUSIC_ERROR:
                     isLoadPath = false;
                     loadlist.setVisibility(View.GONE);
-                    Toast.makeText(SearchActivity.this, "拉取歌曲链接失败", Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(SearchActivity.this, "拉取歌曲链接失败", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
                     break;
                 case Msg.SEARCH_ERROR:
                     isLoadlist = false;
@@ -278,7 +279,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                     if (page == 1) {
                         final MusicList mList = intent.getParcelableExtra("list");
                         if (mList == null || mList.getList() == null || mList.getList().size() == 0) {
-                            Toast.makeText(SearchActivity.this, "没有更多的数据了", Toast.LENGTH_SHORT).show();
+                            TastyToast.makeText(SearchActivity.this, "没有更多的数据了", Msg.LENGTH_SHORT, TastyToast.WARNING).show();
                             loadlist.setVisibility(View.GONE);
                             return;
                         }
@@ -305,7 +306,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                             }
                         }).start();
                     }
-                    Toast.makeText(SearchActivity.this, "获取列表失败", Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(SearchActivity.this, "获取列表失败", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
                     break;
                 case Msg.PLAY_COMPLETION:  //播放完成
                     //改变样式
@@ -364,7 +365,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
 
     //判断歌曲是否存在本地列表
     public int isExist(Music music) {
-        List<Music> list = app.getmList();
+        List<Music> list;
+        if(music.getPath().contains("http://")){
+            list = dao.selMusicByDate();
+        }else {
+            list = dao.getMusicData();
+        }
         if (list == null || list.size() == 0) return 1;
         for (int i = 0; i < list.size(); i++) {
             Music m = list.get(i);
@@ -416,7 +422,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         String str = keywork.getText().toString();
         if (str.replaceAll(" ", "").length() == 0) {
             loadlist.setVisibility(View.GONE);
-            //Toast.makeText(this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "请输入搜索内容", Msg.LENGTH_SHORT).show();
             return;
         }
         searchList(str);
@@ -440,7 +446,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                 adapter.notifyDataSetChanged();
                                 loadlist.setVisibility(View.GONE);
                                 if(list.size() == 0){
-                                    Toast.makeText(SearchActivity.this, "没有搜索到符合条件的歌曲", Toast.LENGTH_SHORT).show();
+                                    TastyToast.makeText(SearchActivity.this, "没有搜索到符合条件的歌曲", Msg.LENGTH_SHORT, TastyToast.WARNING).show();
                                 }
                             }
                         });
@@ -476,11 +482,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                             app.setmList(dao.getMusicData());
                             app.setPlaylist(0);
                         }
-                        int idx = isExist(music);
+                        app.setIdx(isExist(music));
                         Intent broadcast = new Intent();
                         broadcast.setAction("sBroadcast");
                         broadcast.putExtra("what", Msg.PLAY_KUGOU_MUSIC);
-                        broadcast.putExtra("idx", idx);
                         sendBroadcast(broadcast);
                         runOnUiThread(new Runnable() {
                             @Override

@@ -7,7 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * Created by xiu on 2017/12/26.
+ * 保存音乐信息的实体类
  */
 
 @DatabaseTable

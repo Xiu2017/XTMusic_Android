@@ -2,10 +2,10 @@ package com.xiu.api;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.xiu.dao.MusicDao;
-import com.xiu.encoder.UnicodeDecoder;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.entity.MusicList;
@@ -26,12 +26,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Created by xiu on 2018/1/15.
+ * QQ音乐接口
  */
 
 public class QQMusic {
 
-    private static Context context;
+    private Context context;
     private MusicDao dao;
 
     public QQMusic(Context context) {
@@ -58,7 +58,7 @@ public class QQMusic {
         //异步执行请求
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@Nullable Call call, @NonNull IOException e) {
                 if (page == 1) {
                     musicList.setList(list);
                 }
@@ -71,7 +71,7 @@ public class QQMusic {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@Nullable Call call, @NonNull Response response) throws IOException {
                 //通过response得到服务器响应内容
                 String str = response.body().string();
                 try {
@@ -112,7 +112,6 @@ public class QQMusic {
                             music.setTime(time);
 
                             music.setTitle(obj.getString("fsong"));
-                            //Log.i("title", music.getTitle());
 
                             String fsinger2 = "";
                             if (obj.has("fsinger2") && obj.getString("fsinger2").length() > 0) {
@@ -122,7 +121,6 @@ public class QQMusic {
 
                             music.setAlbum(obj.getString("albumName_hilight"));
                             music.setName(music.getArtist() + " - " + music.getTitle() + ".m4a");
-                            //52Log.d("hash", music.getPath());
                             if (!dao.isExist(local, music)) {
                                 list.add(music);
                             }
@@ -173,15 +171,16 @@ public class QQMusic {
         //异步执行请求
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@Nullable Call call, @NonNull IOException e) {
                 Intent kBroadcast = new Intent();
                 kBroadcast.setAction("sBroadcast");
                 kBroadcast.putExtra("what", Msg.GET_MUSIC_ERROR);
                 context.sendBroadcast(kBroadcast);
+                e.printStackTrace();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(@Nullable Call call, @NonNull Response response) throws IOException {
                 //通过response得到服务器响应内容
                 String str = response.body().string();
                 str = str.replace("jsonCallback(", "").replace(");", "");
@@ -199,7 +198,6 @@ public class QQMusic {
                     String key = json.getString("key");
                     String musicUrl = urls[1] + "C100" + music.getPath() + ".m4a?vkey=" + key + "&fromtag=0";
                     music.setPath(musicUrl);
-                    //Log.d("str", musicUrl);
 
                     //拼接专辑图片链接
                     String albumId = music.getAlbumPath();
@@ -208,7 +206,6 @@ public class QQMusic {
                             + albumId.substring(albumId.length() - 1, albumId.length()) + "/"
                             + albumId + ".jpg";
                     music.setAlbumPath(albumUrl);
-                    //Log.d("album", albumUrl);
 
                     //拼接歌词链接 -- 有时间再做
 

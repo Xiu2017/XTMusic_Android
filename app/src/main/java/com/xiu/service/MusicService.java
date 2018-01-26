@@ -23,8 +23,8 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.danikula.videocache.CacheListener;
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.sdsmdg.tastytoast.TastyToast;
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
@@ -34,6 +34,7 @@ import com.xiu.utils.StorageUtil;
 import com.xiu.utils.mApplication;
 import com.xiu.xtmusic.AlbumActivity;
 import com.xiu.xtmusic.R;
+import com.xiu.xtmusic.SearchActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by xiu on 2017/12/27.
+ * 音乐服务
  */
 
 public class MusicService extends Service implements MediaPlayer.OnBufferingUpdateListener{
@@ -117,7 +118,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                             timerCk = false;
                             soonExit = false;
                             time = 0;
-                            Toast.makeText(MusicService.this, "定时器已取消", Toast.LENGTH_SHORT).show();
+                            TastyToast.makeText(MusicService.this, "定时器已取消", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
                         }
                         break;
                     case Msg.PLAY_KUGOU_MUSIC:
@@ -185,7 +186,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             } else {
                 app.setIdx(0);
             }
-            //Toast.makeText(this, "文件不存在", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "文件不存在", Msg.LENGTH_SHORT).show();
             return;
         }
 
@@ -230,13 +231,13 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             });
             //addToHistory(music);  //将音乐添加到最近播放列表
             if (path.contains("http://")) {
-                Toast.makeText(MusicService.this, "正在缓冲音乐", Toast.LENGTH_SHORT).show();
+                TastyToast.makeText(this, "正在缓冲音乐", Msg.LENGTH_SHORT, TastyToast.DEFAULT).show();
                 senRefresh();  //通知activity更新信息
                 musicNotification();  //更新状态栏信息
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "无法播放该歌曲", Toast.LENGTH_SHORT).show();
+            TastyToast.makeText(this, "无法播放该歌曲", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
         }
     }
 
@@ -256,11 +257,11 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
         switch (NetworkState.GetNetype(this)) {
             //返回值 -1：没有网络  1：WIFI网络2：wap网络3：net网络
             case -1:
-                Toast.makeText(this, "当前没有网络连接", Toast.LENGTH_SHORT).show();
+                TastyToast.makeText(this, "当前没有网络连接", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
                 return false;
             case 1:
                 if (!NetworkState.isNetworkConnected(this)) {
-                    Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(this, "网络连接不可用", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
                     return false;
                 } else {
                     return true;
@@ -268,11 +269,11 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             case 2:
             case 3:
                 if (!NetworkState.isMobileConnected(this)) {
-                    Toast.makeText(this, "网络连接不可用", Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(this, "网络连接不可用", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
                     return false;
                 } else if (!app.isMobileConnected()) {
                     app.setMobileConnected(true);
-                    Toast.makeText(this, "当前正在使用移动网络播放，请注意您的流量哦！", Toast.LENGTH_LONG).show();
+                    TastyToast.makeText(this, "当前正在使用移动网络播放，请注意您的流量哦！", Msg.LENGTH_SHORT, TastyToast.WARNING).show();
                     return true;
                 } else if (app.isMobileConnected()) {
                     return true;
@@ -330,7 +331,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
             mp.pause();
             return;
         }
-        if (app.getmList() != null && app.getmList().size() >= app.getIdx()) {
+        if (app.getmList() != null && app.getIdx() < app.getmList().size()) {
             app.setIdx(app.getIdx() + 1);
         } else {
             app.setIdx(1);

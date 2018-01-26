@@ -1,7 +1,7 @@
 package com.xiu.entity;
 
 /**
- * Created by xiu on 2017/12/15.
+ * 标记各种广播ID，便于识别
  */
 
 public class Msg {
@@ -30,5 +30,6 @@ public class Msg {
     public static final int GET_MUSIC_ERROR = 1024;  //获取歌曲失败
     public static final int SEARCH_ERROR = 1025;  //获取列表失败
 
-    public static final int RESULT_LOGIN = 2001;  //activity登录数据返回
+    public static final int LENGTH_SHORT = 4;  //Toast短提示的时长
+    //public static final int LENGTH_LONG = 5;  //Toast长提示的时长
 }

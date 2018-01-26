@@ -12,14 +12,14 @@ import com.xiu.xtmusic.R;
 import java.util.List;
 
 /**
- * Created by xiu on 2017/12/31.
+ * 歌词ListView适配器
  */
 
 public class LyricListAdapter extends BaseAdapter {
 
-    private List<LrcRow> list;
-    private Context context;
-    private int idx;
+    private List<LrcRow> list;  //保存歌词的list
+    private Context context;  //上下文
+    private int idx;  //高亮显示第几行
 
     public LyricListAdapter(List<LrcRow> list, Context context, int idx) {
         this.list = list;
@@ -62,13 +62,12 @@ public class LyricListAdapter extends BaseAdapter {
             line = (TextView) view.getTag();
         }
         if (list != null && list.size() > 1) {
-            //Log.d("line", list.size()+"");
             if (i == 0) {
                 line.setText("");
                 return view;
             }
             LrcRow lrcRow = list.get(i - 1);
-            line.setText(lrcRow.content + "");
+            line.setText(lrcRow.content);
             if (idx == i) {
                 line.setTextColor(context.getResources().getColor(R.color.colorWrite));
             } else {
