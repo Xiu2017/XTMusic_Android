@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.view.GravityCompat;
 import android.view.KeyEvent;
 
 import com.xiu.utils.CheckPermission;
@@ -87,11 +88,9 @@ public class SplashActivity extends Activity {
 
     //禁用按键事件
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+    public void onBackPressed() {
+        //否则后台运行
+        moveTaskToBack(false);
     }
 
     //进入权限设置页面

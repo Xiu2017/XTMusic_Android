@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -221,7 +222,9 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 /*                            case 1:
                                 break;*/
                             case 2:
-                                app.setIdx(new Random().nextInt(app.getmList().size()-1));
+                                if(app.getmList() != null && app.getmList().size() > 1){
+                                    app.setIdx(new Random().nextInt(app.getmList().size()-1)+1);
+                                }
                                 senRefresh();
                                 break;
                         }
@@ -455,6 +458,9 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
         app = (mApplication) getApplicationContext();
         app.setmService(this);
         app.setmList(new ArrayList<Music>());
+        //播放模式
+        SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+        app.setPlaymode(pref.getInt("playmode", 0));
 
         //动态注册一个广播接收者
         IntentFilter filter = new IntentFilter();
@@ -471,6 +477,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
 
         //定时刷新播放进度
         runnable.run();
+
         return super.onStartCommand(intent, flags, startId);
     }
 

@@ -207,13 +207,13 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         Window win = getWindow();
         //KITKAT也能满足，只是SYSTEM_UI_FLAG_LIGHT_STATUS_BAR（状态栏字体颜色反转）只有在6.0才有效
         win.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);//透明状态栏
-        // 状态栏字体设置为深色，SYSTEM_UI_FLAG_LIGHT_STATUS_BAR 为SDK23增加
         win.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         // 部分机型的statusbar会有半透明的黑色背景
         win.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         win.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            win.setStatusBarColor(getResources().getColor(R.color.colorPrimary));
             win.setStatusBarColor(Color.TRANSPARENT);// SDK21
         }
     }
@@ -497,9 +497,11 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 }).start();
                 break;
             case 1:
+                TastyToast.makeText(this, "正在获取音乐链接", Msg.LENGTH_SHORT, TastyToast.DEFAULT).show();
                 new KuGouMusic(this).musicUrl(music);
                 break;
             case 2:
+                TastyToast.makeText(this, "正在获取音乐链接", Msg.LENGTH_SHORT, TastyToast.DEFAULT).show();
                 new QQMusic(this).musicUrl(music);
                 break;
         }

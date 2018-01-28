@@ -31,5 +31,5 @@ public class Msg {
     public static final int SEARCH_ERROR = 1025;  //获取列表失败
 
     public static final int LENGTH_SHORT = 4;  //Toast短提示的时长
-    //public static final int LENGTH_LONG = 5;  //Toast长提示的时长
+    public static final int LENGTH_LONG = 5;  //Toast长提示的时长
 }

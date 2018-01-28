@@ -105,9 +105,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         setTitle("");
         setContentView(R.layout.activity_main);
         dao = new MusicDao(this);
+        app = (mApplication) getApplicationContext();
+        app.addActivity(this);
 
         initNavigationView();  //初始化NavigationView
-        //initStatusBar();  //初始化沉浸式状态栏
+        initStatusBar();  //初始化沉浸式状态栏
         initViewPager();  //初始化viewPager
         initView();  //初始化布局元素
         initList();  //初始化列表
@@ -209,8 +211,30 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
         timerItem = navigationView.getMenu().getItem(2);
         VisualizerItem = navigationView.getMenu().getItem(0);
+
+        MenuItem playMode = navigationView.getMenu().getItem(3);
+        playMode(playMode);
+    }
+
+    //播放模式
+    public void playMode(MenuItem playMode){
+        switch (app.getPlaymode()) {
+            case 0:
+                playMode.setTitle("列表循环");
+                playMode.setIcon(R.mipmap.ic_loop);
+                break;
+            case 1:
+                playMode.setTitle("单曲循环");
+                playMode.setIcon(R.mipmap.ic_loop_one);
+                break;
+            case 2:
+                playMode.setTitle("随机播放");
+                playMode.setIcon(R.mipmap.ic_random);
+                break;
+        }
     }
 
     //初始化沉浸式状态栏
@@ -220,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         //KITKAT也能满足，只是SYSTEM_UI_FLAG_LIGHT_STATUS_BAR（状态栏字体颜色反转）只有在6.0才有效
         win.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);//透明状态栏
         // 状态栏字体设置为深色，SYSTEM_UI_FLAG_LIGHT_STATUS_BAR 为SDK23增加
-        win.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        //win.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
         // 部分机型的statusbar会有半透明的黑色背景
         win.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -284,8 +308,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         hunt = findViewById(R.id.hunt);
         musicSize = findViewById(R.id.musicSize);
         musicName = findViewById(R.id.musicName);
-        app = (mApplication) getApplicationContext();
-        app.addActivity(this);
     }
 
     //viewpager切换到指定item
@@ -543,6 +565,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                     if (file.exists()) {
                         if (music.getPath().contains(extSD + "")) {
                             TastyToast.makeText(MainActivity.this, "暂不支持删除外置SD卡文件", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
+                            return;
                         } else if (file != null && file.delete()) {
                             TastyToast.makeText(MainActivity.this, "删除成功", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
                         }
@@ -571,15 +594,17 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                         delIdx = list.indexOf(music);
                         list.clear();
                         list.addAll(dao.getMusicData());
+                        app.setmList(list);
                         break;
                     case 1:
                         delIdx = historyData.indexOf(music);
                         historyData.clear();
                         historyData.addAll(dao.selMusicByDate());
+                        app.setmList(historyData);
                         break;
                 }
 
-                app.getmList().remove(music);
+                //app.getmList().remove(music);
                 if (delIdx == idx && app.getmList().size() > 0 && app.getPlaylist() == viewPager.getCurrentItem()) {
                     app.setIdx(delIdx);
                     playNext();
@@ -829,7 +854,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     public void updateList() {
         new Thread(new Runnable() {
             @Override
-            public void run() {
+            public synchronized void run() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -990,6 +1015,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        SharedPreferences pref;
+        SharedPreferences.Editor editor;
         switch (item.getItemId()) {
             case R.id.nav_refresh:
                 updateMediaRepertory();
@@ -1003,28 +1030,34 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 }
                 break;
             case R.id.nav_playmode:
+                pref = getSharedPreferences("pref", MODE_PRIVATE);
+                editor = pref.edit();
                 switch (app.getPlaymode()) {
                     case 0:
                         app.setPlaymode(1);
                         item.setTitle("单曲循环");
                         item.setIcon(R.mipmap.ic_loop_one);
+                        editor.putInt("playmode", 1);
                         break;
                     case 1:
                         app.setPlaymode(2);
                         item.setTitle("随机播放");
                         item.setIcon(R.mipmap.ic_random);
+                        editor.putInt("playmode", 2);
                         break;
                     case 2:
                         app.setPlaymode(0);
                         item.setTitle("列表循环");
                         item.setIcon(R.mipmap.ic_loop);
+                        editor.putInt("playmode", 0);
                         break;
                 }
+                editor.commit();
                 break;
             case R.id.nav_visualizer:
-                SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+                pref = getSharedPreferences("pref", MODE_PRIVATE);
                 int visualizer = pref.getInt("visualizer", 0);
-                SharedPreferences.Editor editor = pref.edit();
+                editor = pref.edit();
                 if (visualizer == 0) {
                     editor.putInt("visualizer", 1);
                     item.setTitle("开启可视化");

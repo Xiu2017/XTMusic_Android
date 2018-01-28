@@ -12,6 +12,10 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.sdsmdg.tastytoast.TastyToast;
+import com.xiu.entity.Msg;
+import com.xiu.xtmusic.MainActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -123,7 +127,7 @@ public class AudioUtil {
 
             switch (type) {
                 case RingtoneManager.TYPE_RINGTONE:
-                    Toast.makeText(context.getApplicationContext(), "设置来电铃声成功！", Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(context, "设置来电铃声成功", Msg.LENGTH_SHORT, TastyToast.SUCCESS).show();
                     break;
 /*                case RingtoneManager.TYPE_NOTIFICATION:
                     Toast.makeText(context.getApplicationContext(), "设置通知铃声成功！", Toast.LENGTH_SHORT).show();
@@ -141,6 +145,6 @@ public class AudioUtil {
         intent.setData(Uri.parse("package:" + context.getPackageName()));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
-        Toast.makeText(context.getApplicationContext(), "请授予权限再返回进行操作", Toast.LENGTH_LONG).show();
+        TastyToast.makeText(context, "请授予权限再返回进行操作", Msg.LENGTH_SHORT, TastyToast.WARNING).show();
     }
 }

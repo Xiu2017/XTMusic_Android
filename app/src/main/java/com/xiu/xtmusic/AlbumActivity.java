@@ -102,10 +102,15 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
             //绑定MediaPlayer
             customVisualizer.setPlayer(app.getMp());
         }else {
+            //完全隐藏可视化
+            CustomVisualizer cv = findViewById(R.id.visualizer);
+            cv.setVisibility(View.GONE);
+            //专辑封面底部间距为0
             LinearLayout layout = findViewById(R.id.albumParent);
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
             params.bottomMargin = 0;
             layout.setLayoutParams(params);
+            //歌词底部间距为0
             View view = pages.get(1);
             ListView listView = view.findViewById(R.id.lyricList);
             RelativeLayout.LayoutParams listParames = (RelativeLayout.LayoutParams) listView.getLayoutParams();
@@ -153,6 +158,16 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         app = (mApplication) getApplicationContext();
         app.addActivity(this);
         dao = new MusicDao(this);
+
+        CustomVisualizer cv = findViewById(R.id.visualizer);
+        cv.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent intent = new Intent(AlbumActivity.this, VisualizerActivity.class);
+                startActivity(intent);
+                return false;
+            }
+        });
     }
 
     //初始化viewPager
@@ -176,6 +191,17 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         //lrcList.setOnItemSelectedListener(mItemSelected);
         lrcList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         lrcList.setEnabled(false);
+
+
+        view1.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent intent = new Intent(AlbumActivity.this, ImageActivity.class);
+                intent.putExtra("music", music);
+                startActivity(intent);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -201,6 +227,13 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(Intent.createChooser(intent, "分享音乐文件"));
                     }
+                }
+                break;
+            case R.id.visualizer:
+                if(viewPager.getCurrentItem() == 0){
+                    viewPager.setCurrentItem(1, true);
+                }else {
+                    viewPager.setCurrentItem(0, true);
                 }
                 break;
         }
