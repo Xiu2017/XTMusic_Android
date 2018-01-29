@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.sdsmdg.tastytoast.TastyToast;
+import com.squareup.picasso.Picasso;
 import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
@@ -41,12 +42,12 @@ public class ImageActivity extends AppCompatActivity {
         music = intent.getParcelableExtra("music");
         if(music != null){
             getImg();
-            showImg();
         }
     }
 
     //获取图片
     public void getImg(){
+        ImageView imageView = findViewById(R.id.showImg);
         String innerSDPath = new StorageUtil(this).innerSDPath();
         String name = music.getName();
         final String toPath = innerSDPath + "/XTMusic/AlbumImg/"
@@ -54,17 +55,14 @@ public class ImageActivity extends AppCompatActivity {
 
         File file = new File(toPath);
         if (file.exists()) {
-            bitmap = BitmapFactory.decodeFile(toPath);
+            Picasso.with(this)
+                    .load(file)
+                    .into(imageView);
         } else {
             MusicDao dao = new MusicDao(this);
             bitmap = dao.getAlbumBitmap(music.getPath(), R.mipmap.album_default);
+            imageView.setImageBitmap(bitmap);
         }
-    }
-
-    //显示图片
-    public void showImg(){
-        ImageView imageView = findViewById(R.id.showImg);
-        imageView.setImageBitmap(bitmap);
     }
 
     //保存图片
@@ -78,6 +76,15 @@ public class ImageActivity extends AppCompatActivity {
             }else {
                 TastyToast.makeText(this, "保存失败", Msg.LENGTH_SHORT, TastyToast.ERROR).show();
             }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(bitmap != null){
+            bitmap.recycle();
+            bitmap = null;
         }
     }
 }

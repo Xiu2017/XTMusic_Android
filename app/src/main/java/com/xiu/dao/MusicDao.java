@@ -38,8 +38,8 @@ public class MusicDao {
 
     //根据添加时间查询歌曲
     public List<Music> selMusicByDate() {
+        QueryBuilder builder = dao.queryBuilder();
         try {
-            QueryBuilder builder = dao.queryBuilder();
             builder.orderBy("date", false);
             return builder.query();
         } catch (SQLException e) {

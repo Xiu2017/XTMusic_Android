@@ -55,6 +55,7 @@ import android.widget.TimePicker;
 
 import com.danikula.videocache.HttpProxyCacheServer;
 import com.sdsmdg.tastytoast.TastyToast;
+import com.squareup.picasso.Picasso;
 import com.xiu.adapter.MainPagerAdapter;
 import com.xiu.adapter.MusicListAdapter;
 import com.xiu.dao.MusicDao;
@@ -220,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     }
 
     //播放模式
-    public void playMode(MenuItem playMode){
+    public void playMode(MenuItem playMode) {
         switch (app.getPlaymode()) {
             case 0:
                 playMode.setTitle("列表循环");
@@ -265,10 +266,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     //初始化列表
     public void initList() {
         list = new ArrayList<>();
-        adapter = new MusicListAdapter(list, MainActivity.this);
+        adapter = new MusicListAdapter(list, this);
         musicList.setAdapter(adapter);
         historyData = new ArrayList<>();
-        historyAdapter = new MusicListAdapter(historyData, MainActivity.this);
+        historyAdapter = new MusicListAdapter(historyData, this);
         historyList.setAdapter(historyAdapter);
         AbsListView.OnScrollListener mScroll = new AbsListView.OnScrollListener() {
             @Override
@@ -418,7 +419,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
     //刷新剩余退出时间
     int interval = 10;
-
     public void refreshTime(long time) {
         time = time - System.currentTimeMillis();
         if (isTimer) {
@@ -429,6 +429,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 } else {
                     interval += 1;
                 }
+            }else {
+                timerItem.setTitle("取消定时器（00:00）");
             }
         }
     }
@@ -731,7 +733,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     }
 
     //改变样式
-    Bitmap bitmap;
+    //Bitmap bitmap;
 
     public void refresh() {
         if (app.getmList() == null || app.getmList().size() == 0 || app.getIdx() == 0) {
@@ -754,45 +756,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
             historyAdapter.notifyDataSetChanged();
             return;
         }
-        final Music music = app.getmList().get(app.getIdx() - 1);
+
+        Music music = app.getmList().get(app.getIdx() - 1);
+
         title.setText(music.getTitle());
         artist.setText(music.getArtist());
         musicSize.setText(music.getSize() + "");
         musicName.setText(music.getName() + "");
+        currentTime.setMax(music.getTime());
+
         String innerSDPath = new StorageUtil(this).innerSDPath();
         String name = music.getName();
-        final String toPath = innerSDPath + "/XTMusic/AlbumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
-        File file = new File(toPath);
-        if (file.exists()) {
-            bitmap = BitmapFactory.decodeFile(toPath);
-            setAlbum(music.getPath(), bitmap);
-        } else if (music.getAlbumPath() != null) {
-            FileUtils.downLoadFile(music.getAlbumPath(), toPath, new CallBack() {
-                @Override
-                public void success(String str) {
-                    bitmap = BitmapFactory.decodeFile(toPath);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setAlbum(music.getPath(), bitmap);
-                        }
-                    });
-                }
-
-                @Override
-                public void failed(String str) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setAlbum(music.getPath(), null);
-                        }
-                    });
-                }
-            });
-        } else {
-            setAlbum(music.getPath(), null);
-        }
-        currentTime.setMax(music.getTime());
+        String toPath = innerSDPath + "/XTMusic/AlbumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
+        setAlbum(new File(toPath), music.getPath());
 
         //播放按钮的更新
         if (app.getMp() != null && app.getMp().isPlaying()) {
@@ -812,12 +788,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     }
 
     //设置专辑封面
-    public void setAlbum(String path, Bitmap bitmap) {
-        if (bitmap != null) {
-            album.setImageBitmap(ImageUtil.getimage(bitmap, 150f, 150f));
-        } else {
-            bitmap = dao.getAlbumBitmap(path, R.mipmap.logo_red);
-            album.setImageBitmap(ImageUtil.getimage(bitmap, 150f, 150f));
+    public void setAlbum(File file, String path) {
+        if (file.exists()) {
+            Picasso.with(this)
+                    .load(file)
+                    .resize(150, 150)
+                    .into(album);
+        }else {
+            album.setImageBitmap(ImageUtil.getimage(dao.getAlbumBitmap(path, R.mipmap.logo_red), 150f, 150f));
         }
     }
 
@@ -975,8 +953,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         //注销广播接收者
         unregisterReceiver(mBroadcast);
     }

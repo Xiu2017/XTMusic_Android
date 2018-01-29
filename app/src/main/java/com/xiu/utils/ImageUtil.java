@@ -1,6 +1,7 @@
 package com.xiu.utils;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -9,6 +10,7 @@ import android.os.Environment;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 /**
@@ -79,8 +81,7 @@ public class ImageUtil {
         float scaleHeight = newHeight / height;
         // 缩放图片动作
         matrix.postScale(scaleWidth, scaleHeight);
-        Bitmap bitmap = Bitmap.createBitmap(orgBitmap, 0, 0, (int) width, (int) height, matrix, true);
-        return bitmap;
+        return Bitmap.createBitmap(orgBitmap, 0, 0, (int) width, (int) height, matrix, true);
     }
 
     //bitmap保存为文件
@@ -101,5 +102,17 @@ public class ImageUtil {
             return null;
         }
         return filePic.getAbsolutePath();
+    }
+
+    //加载resource图片
+    public static Bitmap decodeBitmapResource(Resources resources, int id) {
+        Bitmap bitmap;
+        InputStream is = resources.openRawResource(id);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inPurgeable = true;
+        opts.inInputShareable = true;
+        opts.inPreferredConfig = Bitmap.Config.RGB_565;
+        bitmap = BitmapFactory.decodeStream(is, null, opts);
+        return bitmap;
     }
 }

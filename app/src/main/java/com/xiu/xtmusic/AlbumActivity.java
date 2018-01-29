@@ -1,18 +1,21 @@
 package com.xiu.xtmusic;
 
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -31,26 +34,21 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.chibde.visualizer.CircleBarVisualizer;
-import com.chibde.visualizer.LineBarVisualizer;
-import com.chibde.visualizer.LineVisualizer;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 import com.xiu.adapter.LyricListAdapter;
 import com.xiu.customview.CustomVisualizer;
-import com.xiu.dao.MusicDao;
 import com.xiu.entity.Msg;
 import com.xiu.entity.Music;
 import com.xiu.utils.CallBack;
 import com.xiu.utils.DefaultLrcBuilder;
 import com.xiu.utils.FileUtils;
-import com.xiu.utils.ImageUtil;
 import com.xiu.api.KuGouLrc;
 import com.xiu.utils.LrcRow;
 import com.xiu.utils.StorageUtil;
 import com.xiu.utils.TimeFormatUtil;
 import com.xiu.utils.mApplication;
 import com.xiu.utils.readTextUtil;
-
-import net.qiujuer.genius.blur.StackBlur;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,7 +57,6 @@ import java.util.List;
 public class AlbumActivity extends AppCompatActivity implements View.OnClickListener {
 
     //全局变量
-    private MusicDao dao;
     private List<LrcRow> rows;
     private ListView lrcList;
     private LyricListAdapter lyricListAdapter;
@@ -87,11 +84,11 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
     }
 
     //初始化可视化
-    public void initVisualizer(){
+    public void initVisualizer() {
         SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
         int visualizer = pref.getInt("visualizer", 0);
-        if(app.getMp() != null && visualizer == 0){
-            if(customVisualizer != null){
+        if (app.getMp() != null && visualizer == 0) {
+            if (customVisualizer != null) {
                 customVisualizer.release();  //释放可视化资源
             }
             customVisualizer = findViewById(R.id.visualizer);
@@ -101,7 +98,16 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
             customVisualizer.setDensity(128);
             //绑定MediaPlayer
             customVisualizer.setPlayer(app.getMp());
-        }else {
+
+            customVisualizer.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    Intent intent = new Intent(AlbumActivity.this, VisualizerActivity.class);
+                    startActivity(intent);
+                    return false;
+                }
+            });
+        } else {
             //完全隐藏可视化
             CustomVisualizer cv = findViewById(R.id.visualizer);
             cv.setVisibility(View.GONE);
@@ -157,17 +163,6 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         dot2 = findViewById(R.id.dot2);
         app = (mApplication) getApplicationContext();
         app.addActivity(this);
-        dao = new MusicDao(this);
-
-        CustomVisualizer cv = findViewById(R.id.visualizer);
-        cv.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                Intent intent = new Intent(AlbumActivity.this, VisualizerActivity.class);
-                startActivity(intent);
-                return false;
-            }
-        });
     }
 
     //初始化viewPager
@@ -178,7 +173,7 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         View view1 = inflater.inflate(R.layout.layout_album, null);
         View view2 = inflater.inflate(R.layout.layout_lyric, null);
         //将view装入数组
-        pages = new ArrayList<View>();
+        pages = new ArrayList<>();
         pages.add(view1);
         pages.add(view2);
 
@@ -188,10 +183,8 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
 
         lrcList = view2.findViewById(R.id.lyricList);
         noLrc = view2.findViewById(R.id.nolrc);
-        //lrcList.setOnItemSelectedListener(mItemSelected);
-        lrcList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        lrcList.setEnabled(false);
 
+        lrcList.setEnabled(false);
 
         view1.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -230,9 +223,9 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                 }
                 break;
             case R.id.visualizer:
-                if(viewPager.getCurrentItem() == 0){
+                if (viewPager.getCurrentItem() == 0) {
                     viewPager.setCurrentItem(1, true);
-                }else {
+                } else {
                     viewPager.setCurrentItem(0, true);
                 }
                 break;
@@ -445,101 +438,75 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    //更新界面信息
-    Bitmap bitmap = null;
-
     public void refresh() {
-        //耗时操作，异步
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<Music> list = app.getmList();
-                if (list == null || list.size() == 0 || app.getIdx() == 0) {
-                    albumDefault();
-                    return;
-                }
-                music = list.get(app.getIdx() - 1);
-                if (music == null) return;
-                String innerSDPath = new StorageUtil(AlbumActivity.this).innerSDPath();
-                String name = music.getName();
-                final String toPath = innerSDPath + "/XTMusic/AlbumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
-                File file = new File(toPath);
-                if (file.exists()) {
-                    bitmap = BitmapFactory.decodeFile(toPath);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setAlbum(bitmap);
-                        }
-                    });
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            setAlbum(null);
-                        }
-                    });
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        currentTime.setMax(music.getTime());
-                        title.setText(music.getTitle());
-                        artist.setText(music.getArtist());
-                        maxTime.setText(TimeFormatUtil.secToTime(music.getTime() / 1000) + "");
-                        currentTime.setMax(music.getTime());
-                        currentTime.setSecondaryProgress(music.getTime());
-
-                        //播放按钮的更新
-                        if (app.getMp() != null && app.getMp().isPlaying()) {
-                            playBtn.setImageDrawable(getResources().getDrawable(R.drawable.btm_pause_sel));
-                            albumRotate(START);
-                        } else {
-                            playBtn.setImageDrawable(getResources().getDrawable(R.drawable.btm_play_sel));
-                            albumRotate(STOP);
-                        }
-                        readLyric();
-                    }
-                });
-            }
-        }).start();
+        List<Music> list = app.getmList();
+        if (list == null || list.size() == 0 || app.getIdx() == 0) {
+            albumDefault();
+            return;
+        }
+        //获取正在播放的歌曲信息
+        music = list.get(app.getIdx() - 1);
+        if (music == null) return;
+        //设置专辑封面
+        String innerSDPath = new StorageUtil(AlbumActivity.this).innerSDPath();
+        String name = music.getName();
+        String toPath = innerSDPath + "/XTMusic/AlbumImg/" + name.substring(0, name.lastIndexOf(".")) + ".jpg";
+        setAlbum(new File(toPath));
+        //显示音乐信息
+        currentTime.setMax(music.getTime());
+        title.setText(music.getTitle());
+        artist.setText(music.getArtist());
+        maxTime.setText(TimeFormatUtil.secToTime(music.getTime() / 1000) + "");
+        currentTime.setMax(music.getTime());
+        currentTime.setSecondaryProgress(music.getTime());
+        //播放按钮的更新
+        if (app.getMp() != null && app.getMp().isPlaying()) {
+            playBtn.setImageDrawable(getResources().getDrawable(R.drawable.btm_pause_sel));
+            albumRotate(START);
+        } else {
+            playBtn.setImageDrawable(getResources().getDrawable(R.drawable.btm_play_sel));
+            albumRotate(STOP);
+        }
+        readLyric();
     }
 
     //设置专辑封面
-    public void setAlbum(Bitmap bitmap) {
-        if (bitmap == null) {
-            bitmap = dao.getAlbumBitmap(music.getPath(), R.mipmap.album_default);
+    public void setAlbum(File file) {
+        if (file.exists()) {
+            Picasso.with(this)
+                    .load(file)
+                    .into(album);
+            Picasso.with(this)
+                    .load(file)
+                    .resize(100, 100)
+                    .transform(new BlurTransformation(this, 20))
+                    .into(albumbg);
+        } else {
+            albumDefault();
         }
-        album.setImageBitmap(ImageUtil.getimage(bitmap, 500f, 500f));
-        bitmap = ImageUtil.getimage(bitmap, 100f, 100f);
-        bitmap = StackBlur.blur(bitmap, 20, false);
-        albumbg.setImageBitmap(bitmap);
     }
 
     //设置默认专辑界面
     public void albumDefault() {
-        //耗时操作，异步
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        currentTime.setMax(0);
-                        currentTime.setProgress(0);
-                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.album_default);
-                        album.setImageBitmap(bitmap);
-                        bitmap = ImageUtil.getimage(bitmap, 20f, 20f);
-                        try {
-                            bitmap = StackBlur.blur(bitmap, (int) 4, false);
-                            albumbg.setImageBitmap(bitmap);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        }).start();
+        //currentTime.setMax(0);
+        //currentTime.setProgress(0);
+        Picasso.with(this)
+                .load(R.mipmap.album_default)
+                .into(album);
+        Picasso.with(this)
+                .load(R.mipmap.album_default)
+                .resize(20, 20)
+                .transform(new BlurTransformation(this, 4))
+                .into(albumbg);
+/*        bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.album_default);
+        album.setImageBitmap(bitmap);
+        bitmap = ImageUtil.getimage(bitmap, 20f, 20f);
+        try {
+            bitmap = StackBlur.blur(bitmap, 4, false);
+            albumbg.setImageBitmap(bitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
     }
 
     //更新时间进度
@@ -603,10 +570,9 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                 case 0:
                     dot1.setBackgroundResource(R.drawable.circle_dot_sel);
                     dot2.setBackgroundResource(R.drawable.circle_dot);
-                    if(app.getMp() != null && app.getMp().isPlaying()){
+                    if (app.getMp() != null && app.getMp().isPlaying()) {
                         albumRotate(START);
                     }
-                    //initVisualizer();
                     break;
                 case 1:
                     dot1.setBackgroundResource(R.drawable.circle_dot);
@@ -614,9 +580,6 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
                     int padding = lrcList.getHeight() / 2;
                     lrcList.setPadding(0, padding - 208, 0, padding);
                     albumRotate(STOP);
-/*                    if(customVisualizer != null){
-                        customVisualizer.release();
-                    }*/
                     break;
             }
         }
@@ -629,7 +592,6 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
-
         currentTime.setOnSeekBarChangeListener(mSeekBarChange);
 
         //动态注册一个广播接收者
@@ -674,9 +636,74 @@ public class AlbumActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onPause() {
         super.onPause();
+        //注销广播
         unregisterReceiver(aBroadcast);
-        if(customVisualizer != null){
-            customVisualizer.release();  //释放可视化资源
+        if (customVisualizer != null) {
+            //释放可视化资源
+            customVisualizer.release();
+            //移除监听事件
+            customVisualizer.setOnLongClickListener(null);
+        }
+        //移除监听事件
+        currentTime.setOnSeekBarChangeListener(null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //清除背景
+        album.setImageResource(0);
+        albumbg.setImageResource(0);
+        //移除监听事件
+        if (pages != null)
+            pages.get(0).setOnLongClickListener(null);
+        if (viewPager != null)
+            viewPager.removeOnPageChangeListener(mPageChange);
+    }
+
+    //高斯模糊
+    public class BlurTransformation implements Transformation {
+        RenderScript rs;
+        int radius;
+
+        public BlurTransformation(Context context, int radius) {
+            super();
+            rs = RenderScript.create(context);
+            this.radius = radius;
+        }
+
+        @SuppressLint("NewApi")
+        @Override
+        public Bitmap transform(Bitmap bitmap) {
+            // 创建一个Bitmap作为最后处理的效果Bitmap
+            Bitmap blurredBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+            // 分配内存
+            Allocation input = Allocation.createFromBitmap(rs, blurredBitmap, Allocation.MipmapControl.MIPMAP_FULL, Allocation.USAGE_SHARED);
+            Allocation output = Allocation.createTyped(rs, input.getType());
+
+            // 根据我们想使用的配置加载一个实例
+            ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+            script.setInput(input);
+
+            // 设置模糊半径
+            script.setRadius(radius);
+
+            //开始操作
+            script.forEach(output);
+
+            // 将结果copy到blurredBitmap中
+            output.copyTo(blurredBitmap);
+
+            //释放资源
+            bitmap.recycle();
+
+            return blurredBitmap;
+        }
+
+        @Override
+        public String key() {
+            return "blur";
         }
     }
 }

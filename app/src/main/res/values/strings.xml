@@ -31,4 +31,7 @@
 
     <string name="navigation_drawer_open">打开侧边栏</string>
     <string name="navigation_drawer_close">关闭侧边栏</string>
+
+    <string name="tips">权限说明</string>
+    <string name="context">录音权限：用于音乐可视化显示\n电话状态读取权限：当电话状态改变时，来电、电话呼出将暂停播放\n存储读写权限：歌曲的下载、专辑图片的保存等\n本应用承诺不会搜集用户的个人资料。</string>
 </resources>

@@ -2,10 +2,11 @@ package com.xiu.xtmusic;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.view.GravityCompat;
 import android.view.KeyEvent;
 
 import com.xiu.utils.CheckPermission;
@@ -42,14 +43,20 @@ public class SplashActivity extends Activity {
         app = (mApplication) getApplicationContext();
         app.addActivity(this);
         handler = new Handler();
+
+        createNoMedia();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // 延迟SPLASH_DISPLAY_LENGHT时间然后跳转到MainActivity
-        //createNoMedia();
         //app.setmList(dao.getMusicData());
+        getPermission();
+    }
+
+    //权限的获取
+    public void getPermission(){
         if (checkPermission == null) {
             checkPermission = new CheckPermission(SplashActivity.this);
         }
@@ -67,6 +74,23 @@ public class SplashActivity extends Activity {
                 }
             }, SPLASH_DISPLAY_LENGHT);
         }
+    }
+
+    //提示用户权限的用途
+    public void tips(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.tips);//提示帮助
+        builder.setMessage(R.string.context);
+
+        //打开设置，让用户选择打开权限
+        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                getPermission();
+            }
+        });
+        builder.setCancelable(false);
+        builder.show();
     }
 
     //创建.nomedia
@@ -88,9 +112,11 @@ public class SplashActivity extends Activity {
 
     //禁用按键事件
     @Override
-    public void onBackPressed() {
-        //否则后台运行
-        moveTaskToBack(false);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     //进入权限设置页面
@@ -103,8 +129,9 @@ public class SplashActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //拒绝时，没有获取到主要权限，无法运行，关闭页面
-        if (requestCode == REQUEST_CODE && resultCode == PermissionActivity.PERMISSION_DENIEG) {
+/*        if (requestCode == REQUEST_CODE && resultCode == PermissionActivity.PERMISSION_DENIEG) {
             finish();
-        }
+        }*/
+        finish();
     }
 }

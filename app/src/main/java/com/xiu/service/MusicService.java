@@ -75,6 +75,7 @@ public class MusicService extends Service implements MediaPlayer.OnBufferingUpda
                     if (mp != null && mp.isPlaying()) {
                         mp.pause();
                         senRefresh();
+                        musicNotification();
                     }
                 }
             } else {
